@@ -23,6 +23,7 @@ import 'injection_container.dart' as di;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart' as path;
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,9 @@ void main() async {
   ]);
   DioHelper.init();
   ByteData byteData = await rootBundle.load('assets/images/red_logo.png');
+  FFmpegKitConfig.enableFFmpegSessionCompleteCallback((session) {
+    final sessionId = session.getSessionId();
+  });
   String logoPath = await getLogoPath();
   File(logoPath).writeAsBytes(byteData.buffer
       .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
