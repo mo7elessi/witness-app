@@ -81,7 +81,6 @@ class Witness extends StatelessWidget {
         onGenerateRoute: Routers.generateRoute,
         home: BlocConsumer<NetworkBloc, NetworkState>(
           listener: (context, state) {
-
             switch (state.state!) {
               case InternetConnectionState.connected:
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -95,9 +94,7 @@ class Witness extends StatelessWidget {
                 break;
             }
           },
-          builder: (context, state) {
-            return page;
-          },
+          builder: (context, state) => page,
         ),
       ),
     );
