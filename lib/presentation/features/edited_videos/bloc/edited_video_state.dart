@@ -7,7 +7,7 @@ class EditedVideoState extends Equatable {
   final RequestState? uploadingState;
   final String? message;
   final String? taskId;
-  final int? index;
+  final String? path;
   final int? progressValue;
 
   const EditedVideoState({
@@ -16,7 +16,7 @@ class EditedVideoState extends Equatable {
     this.requestState,
     this.uploadingState,
     this.message,
-    this.index,
+    this.path,
     this.progressValue,
     this.taskId,
   });
@@ -28,7 +28,7 @@ class EditedVideoState extends Equatable {
         requestState,
         message,
         data,
-        index,
+        path,
         progressValue,
         uploadingState,
         taskId,
@@ -39,7 +39,7 @@ class EditedVideoState extends Equatable {
     RequestState? requestState,
     String? message,
     Pagination? data,
-    int? index,
+    String? path,
     int? progressValue,
     RequestState? uploadingState,
     String? taskId,
@@ -49,10 +49,12 @@ class EditedVideoState extends Equatable {
       message: message ?? this.message,
       video: video ?? this.video,
       data: data ?? this.data,
-      index: index ?? this.index,
+      path: path ?? this.path,
       progressValue: progressValue ?? this.progressValue,
       uploadingState: uploadingState ?? this.uploadingState,
       taskId: taskId ?? this.taskId,
     );
   }
 }
+
+

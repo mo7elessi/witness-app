@@ -31,6 +31,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    context.read<CameraBloc>().controller!.dispose();
     super.dispose();
   }
 
@@ -51,6 +52,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
         ),
       );
       cameraBloc.add(OpenFlashEvent(open: true));
+
     }
   }
 

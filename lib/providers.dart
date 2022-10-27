@@ -41,6 +41,18 @@ List<BlocProvider> providers = [
           connectionChecker: InternetConnectionChecker(),
         ),
       ),
+      rawVideoBloc: RawVideoBloc(
+        videosRepository: RawVideosRepositoryImpl(
+          networkInfo: NetworkInfoImpl(
+            connectionChecker: InternetConnectionChecker(),
+          ),
+        ),
+        flagRepository: FlagRepositoryImpl(
+          networkInfo: NetworkInfoImpl(
+            connectionChecker: InternetConnectionChecker(),
+          ),
+        ),
+      ),
     ),
   ),
   BlocProvider<RawVideoBloc>(
@@ -73,6 +85,18 @@ List<BlocProvider> providers = [
         videosRepository: VideosRepositoryImpl(
           networkInfo: NetworkInfoImpl(
             connectionChecker: InternetConnectionChecker(),
+          ),
+        ),
+        rawVideoBloc: RawVideoBloc(
+          videosRepository: RawVideosRepositoryImpl(
+            networkInfo: NetworkInfoImpl(
+              connectionChecker: InternetConnectionChecker(),
+            ),
+          ),
+          flagRepository: FlagRepositoryImpl(
+            networkInfo: NetworkInfoImpl(
+              connectionChecker: InternetConnectionChecker(),
+            ),
           ),
         ),
       ),

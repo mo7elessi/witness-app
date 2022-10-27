@@ -65,29 +65,29 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
             appBar: AppBar(
               title: Text(drawerTitles[bloc.currentIndex].toUpperCase()),
               actions: [
-                if (bloc.currentIndex == 0 || bloc.currentIndex == 1)
-                  Container(
-                    padding: const EdgeInsets.only(
-                      right: MySizes.widgetSideSpace,
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        bloc.add(SyncEvent());
-                      },
-                      child: Row(
-                        children: [
-                          Icon(bloc.isSync ? Icons.check : Icons.sync),
-                          const Text(
-                            "SYNC",
-                            style: TextStyle(
-                              fontSize: 12.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  )
+                // if (bloc.currentIndex == 0 || bloc.currentIndex == 1)
+                //   Container(
+                //     padding: const EdgeInsets.only(
+                //       right: MySizes.widgetSideSpace,
+                //     ),
+                //     child: InkWell(
+                //       onTap: () {
+                //         bloc.add(SyncEvent());
+                //       },
+                //       child: Row(
+                //         children: [
+                //           Icon(bloc.isSync ? Icons.check : Icons.sync),
+                //           const Text(
+                //             "SYNC",
+                //             style: TextStyle(
+                //               fontSize: 12.0,
+                //               fontWeight: FontWeight.bold,
+                //             ),
+                //           )
+                //         ],
+                //       ),
+                //     ),
+                //   )
               ],
             ),
             drawer: Drawer(

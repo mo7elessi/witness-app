@@ -13,7 +13,10 @@ import '../model/api/pagination.dart';
 typedef Generic = Either<Failure, UploadTaskResponse>;
 
 abstract class EditedVideosRepository {
-  Future<Generic> uploadVideo({required VideoModel video});
+  Future<Generic> uploadVideo({
+    required VideoModel video,
+    required bool isEditedVideo,
+  });
 
   Future<Either<Failure, Pagination>> getEditedVideos({required String id});
 
@@ -35,7 +38,10 @@ class VideosRepositoryImpl extends EditedVideosRepository {
   FlutterUploader editedVideoUploader = FlutterUploader();
 
   @override
-  Future<Generic> uploadVideo({required VideoModel video}) async {
+  Future<Generic> uploadVideo({
+    required VideoModel video,
+    required bool isEditedVideo,
+  }) async {
     Map<String, String> data = {
       "name": video.name!,
       "user_id": video.userId!,
@@ -48,19 +54,21 @@ class VideosRepositoryImpl extends EditedVideosRepository {
         await editedVideoUploader.enqueue(
           MultipartFormDataUpload(
             method: UploadMethod.POST,
-            url: "${DioHelper.baseUrl}${Endpoints.editedVideos}",
+            url:
+                "${DioHelper.baseUrl}${isEditedVideo ? Endpoints.editedVideos : Endpoints.rawVideos}",
             headers: DioHelper.headers,
             tag: "upload",
             data: data,
             files: [
               FileItem(path: video.file!.path, field: 'file'),
-              FileItem(path: video.thumbnail!.path, field: 'thumbnail')
+              FileItem(path: "${video.thumbnail!.path}", field: 'thumbnail')
             ],
           ),
         );
         final response = await editedVideoUploader.result.firstWhere(
           (element) => element.statusCode == 201,
         );
+
         return Right(response);
       } on ServerException {
         return Left(ServerFailure());

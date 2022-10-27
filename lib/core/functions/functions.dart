@@ -24,7 +24,6 @@ extension FileFormatter on num {
     return "${NumberFormat("#,##0.#").format(this / pow(base, digitGroups))} ${units[digitGroups]}";
   }
 }
-
 String? newPath;
 
 Future<FileSystemEntity> changeFileNameOnly({

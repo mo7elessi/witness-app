@@ -28,7 +28,7 @@ class RawVideoBloc extends Bloc<RawVideoEvent, RawVideoState> {
     required this.flagRepository,
   }) : super(const RawVideoState()) {
     on<RawVideoEvent>((event, emit) {});
-    on<UploadRawVideoEvent>(_uploadVideo);
+   // on<UploadRawVideoEvent>(_uploadVideo);
     on<GetRawVideosEvent>(_getRawVideos);
     on<DeleteRawVideoEvent>(_deleteRawVideo);
     on<DeleteFlagEvent>(_deleteFlag);
@@ -39,47 +39,48 @@ class RawVideoBloc extends Bloc<RawVideoEvent, RawVideoState> {
     on<GetRawVideoEvent>(_getRawVideo);
   }
 
-  Future<void> _uploadVideo(
-    UploadRawVideoEvent event,
-    Emitter<RawVideoState> emit,
-  ) async {
-    await videosRepository.rawVideoUploader.clearUploads();
-    _progressSubscription =
-        videosRepository.rawVideoUploader.progress.listen((progress) {
-      emit(state.copyWith(
-        uploadingState: RequestState.loading,
-        index: event.index,
-        taskId: progress.taskId,
-        progressValue: progress.progress! >= 0 ? progress.progress : 0,
-      ));
-    });
-    final upload = await videosRepository.uploadVideo(video: event.video);
-    upload.fold((failure) {
-      emit(state.copyWith(
-        uploadingState: RequestState.error,
-        index: event.index,
-        message: mapFailureToMessage(failure: failure),
-      ));
-    }, (response) {
-      emit(state.copyWith(
-        uploadingState: RequestState.loaded,
-        index: event.index,
-        message: response.statusCode != null
-            ? UPLOAD_SUCCESS_MESSAGE
-            : UPLOAD_ERROR_MESSAGE,
-      ));
-      if (event.tags.isNotEmpty) {
-        if (response.statusCode != null) {
-          String id = response.response!
-              .split(":")[11]
-              .split(",")
-              .first
-              .replaceAll('"', "");
-          add(UploadFlagEvent(tags: event.tags, rawVideoId: id));
-        }
-      }
-    });
-  }
+  // Future<void> _uploadVideo(
+  //   UploadRawVideoEvent event,
+  //   Emitter<RawVideoState> emit,
+  // ) async {
+  //   await videosRepository.rawVideoUploader.clearUploads();
+  //   _progressSubscription =
+  //       videosRepository.rawVideoUploader.progress.listen((progress) {
+  //         print("task id: ${progress.taskId}\nindex: ${event.index}");
+  //     emit(state.copyWith(
+  //       uploadingState: RequestState.loading,
+  //       index: event.index,
+  //       taskId: progress.taskId,
+  //       progressValue: progress.progress! >= 0 ? progress.progress : 0,
+  //     ));
+  //   });
+  //   final upload = await videosRepository.uploadVideo(video: event.video);
+  //   upload.fold((failure) {
+  //     emit(state.copyWith(
+  //       uploadingState: RequestState.error,
+  //       index: event.index,
+  //       message: mapFailureToMessage(failure: failure),
+  //     ));
+  //   }, (response) {
+  //     emit(state.copyWith(
+  //       uploadingState: RequestState.loaded,
+  //       index: event.index,
+  //       message: response.statusCode != null
+  //           ? UPLOAD_SUCCESS_MESSAGE
+  //           : UPLOAD_ERROR_MESSAGE,
+  //     ));
+  //     if (event.tags.isNotEmpty) {
+  //       if (response.statusCode != null) {
+  //         String id = response.response!
+  //             .split(":")[11]
+  //             .split(",")
+  //             .first
+  //             .replaceAll('"', "");
+  //         add(UploadFlagEvent(tags: event.tags, rawVideoId: id));
+  //       }
+  //     }
+  //   });
+  // }
 
   Future<void> _getRawVideos(
     GetRawVideosEvent event,

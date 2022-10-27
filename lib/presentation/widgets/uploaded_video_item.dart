@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nice_shot/data/model/api/video_model.dart';
@@ -12,6 +13,7 @@ import '../features/flags/pages/uploaded_flags.dart';
 import '../features/raw_videos/bloc/raw_video_bloc.dart';
 import '../features/video_player/video_player_page.dart';
 import 'alert_dialog_widget.dart';
+import 'loading_widget.dart';
 
 class UploadedVideoItem extends StatelessWidget {
   final VideoModel videoModel;
@@ -28,12 +30,6 @@ class UploadedVideoItem extends StatelessWidget {
     TextEditingController controller = TextEditingController();
     final editedVideoBloc = context.read<EditedVideoBloc>();
     final rawVideoBloc = context.read<RawVideoBloc>();
-    List duration = videoModel.duration!.split(":");
-    final videoDuration = Duration(
-      seconds: int.parse(duration.last.toString().split(".").first),
-      minutes: int.parse(duration[1]),
-      hours: int.parse(duration.first),
-    );
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -146,7 +142,7 @@ class UploadedVideoItem extends StatelessWidget {
                                   height: MySizes.verticalSpace / 2,
                                 ),
                                 Text(
-                                  "Duration: ${videoModel.duration!}",
+                                  "Duration: ${formatDuration(castingDuration(duration: videoModel.duration!))}",
                                   style: infoStyle,
                                 ),
                                 const SizedBox(
@@ -195,10 +191,15 @@ class UploadedVideoItem extends StatelessWidget {
                   width: double.infinity,
                   height: double.infinity,
                   decoration: myBoxDecoration,
-                  child: videoModel.thumbnail != null
-                      ? Image.network("${videoModel.thumbnailUrl}",
-                          fit: BoxFit.cover)
-                      : const SizedBox(),
+                  child: CachedNetworkImage(
+                    fit: BoxFit.cover,
+                    imageUrl: "${videoModel.thumbnailUrl}",
+                    progressIndicatorBuilder:
+                        (context, url, downloadProgress) =>
+                            const LoadingWidget(),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
+                  ),
                 ),
                 Container(
                   decoration: BoxDecoration(
@@ -243,7 +244,7 @@ class UploadedVideoItem extends StatelessWidget {
                   borderRadius: BorderRadius.circular(50.0),
                 ),
                 child: Text(
-                  formatDuration(videoDuration),
+                  formatDuration(castingDuration(duration: videoModel.duration ?? "00:00:00.00")),
                   style: Theme.of(context).textTheme.bodySmall!.copyWith(
                         color: Colors.white,
                       ),

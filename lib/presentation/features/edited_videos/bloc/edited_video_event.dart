@@ -8,11 +8,17 @@ class GetEditedVideosEvent extends EditedVideoEvent {
   GetEditedVideosEvent({required this.id});
 }
 
-class UploadVideoEvent extends EditedVideoEvent {
+class UploadVideoEvent extends EditedVideoEvent{
   final VideoModel video;
-  final int index;
+  final bool isEditedVideo;
+  List<FlagModel>? tags = [];
 
-  UploadVideoEvent({required this.video, required this. index});
+  UploadVideoEvent({
+    required this.video,
+    required this.isEditedVideo,
+     this.tags,
+  });
+
 }
 
 class UpdateVideoEvent extends EditedVideoEvent {

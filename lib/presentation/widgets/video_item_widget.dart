@@ -59,7 +59,7 @@ class VideoItemWidget extends StatelessWidget {
             itemBuilder: (_, index) {
               List<int> keys = items.keys.cast<int>().toList();
               final key = keys[index];
-              final VideoModel data =items.get(key)!;
+              final VideoModel data = items.get(key)!;
 
               final String time = DateFormat().add_jm().format(data.dateTime!);
               final String date =
@@ -70,6 +70,8 @@ class VideoItemWidget extends StatelessWidget {
 
               return Builder(
                 builder: (context) {
+                  box.listenable();
+                  context.read<EditedVideoBloc>();
                   if (!isEditedVideo) {
                     for (var flagModel in data.flags!) {
                       int durationShot = int.parse(flagModel.durationShot!);
@@ -107,7 +109,7 @@ class VideoItemWidget extends StatelessWidget {
                           onLongPress: () {
                             if (videoBloc.state.uploadingState ==
                                     RequestState.loading &&
-                                videoBloc.state.index == index) {
+                                videoBloc.state.path == data.path!) {
                             } else {
                               showModalBottomSheet(
                                 backgroundColor: Colors.white,
@@ -194,45 +196,6 @@ class VideoItemWidget extends StatelessWidget {
                                                 Navigator.pop(context));
                                           },
                                         ),
-                                      // ActionWidget(
-                                      //   title: "Upload",
-                                      //   icon: Icons.upload,
-                                      //   function: () {
-                                      //     if (isEditedVideo) {
-                                      //       videoBloc.add(
-                                      //         UploadVideoEvent(
-                                      //           video: video.VideoModel(
-                                      //             categoryId: "1",
-                                      //             name: title,
-                                      //             userId: userId,
-                                      //             duration:
-                                      //                 "${data.videoDuration}",
-                                      //             thumbnail: File(
-                                      //                 data.videoThumbnail!),
-                                      //             file: File(data.path!),
-                                      //           ),
-                                      //           //index: index,
-                                      //         ),
-                                      //       );
-                                      //     } else {
-                                      //       rawVideoBloc
-                                      //           .add(UploadRawVideoEvent(
-                                      //         video: video.VideoModel(
-                                      //           categoryId: "1",
-                                      //           name: title,
-                                      //           thumbnail:
-                                      //               File(data.videoThumbnail!),
-                                      //           userId: userId,
-                                      //           duration:
-                                      //               "${data.videoDuration}",
-                                      //           file: File(data.path!),
-                                      //         ),
-                                      //         tags: data.flags!,
-                                      //       ));
-                                      //     }
-                                      //     Navigator.pop(context);
-                                      //   },
-                                      // ),
                                       ActionWidget(
                                         title: "More Details",
                                         icon: Icons.more_horiz,
@@ -327,8 +290,6 @@ class VideoItemWidget extends StatelessWidget {
                                         height: MySizes.verticalSpace),
                                     UploadVideoStateWidget(
                                       title: title,
-                                      videoBloc: videoBloc,
-                                      rawVideoBloc: rawVideoBloc,
                                       isEditedVideo: isEditedVideo,
                                       index: index,
                                       box: box,

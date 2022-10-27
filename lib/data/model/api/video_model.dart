@@ -32,6 +32,7 @@ class VideoModel {
     this.thumbnail,
     this.tags,
     this.thumbnailUrl,
+    this.th,
   });
 
   VideoModel.fromJson(dynamic json) {

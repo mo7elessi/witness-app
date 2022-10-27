@@ -56,12 +56,11 @@ class UploadedFlagsPage extends StatelessWidget {
             ],
           ),
         ),
-        body:
-            BlocBuilder<RawVideoBloc, RawVideoState>(builder: (context, state) {
+        body: BlocBuilder<RawVideoBloc, RawVideoState>(builder: (context, state) {
           RawVideoBloc bloc = context.read<RawVideoBloc>();
           TextEditingController controller = TextEditingController();
           if (state.flagRequest == RequestState.loaded) {
-            List<TagModel> tags = state.video!.data!.tags ?? [];
+            List<TagModel> tags = state.video?.data!.tags ?? [];
             return tags.isNotEmpty
                 ? Padding(
                     padding: const EdgeInsets.all(MySizes.widgetSideSpace),

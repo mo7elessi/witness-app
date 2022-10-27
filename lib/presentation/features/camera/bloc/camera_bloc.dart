@@ -195,6 +195,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     SaveRecordsEvent event,
     Emitter<CameraState> emit,
   ) async {
+  //  emit(SaveRecordsLoading());
     for (var e in videosToMerge) {
       for (var i = 0; i < e.length - 1; i++) {
         getApplicationStoragePath().then((value) {
@@ -203,10 +204,11 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           String commandToExecute =
               '-i ${e[i].path} -i ${e[i + 1].path} -filter_complex "[0:0][0:1][1:0][1:1]concat=n=2:v=1:a=1[outv][outa]" -map "[outv]" -map "[outa]" -q:v 4 -q:a 4 $path';
           FFmpegKit.executeAsync(commandToExecute, (session) async {
-            print("${[i]}. my command: ${session.getCommand()}\n");
-            videosToMerge.removeAt(0);
             SessionState state = await session.getState();
+
             if (state == SessionState.completed) {
+              videosToMerge.removeAt(0);
+
               final v1Duration = castingDuration(
                 duration: e[i].videoDuration!,
               );
@@ -234,6 +236,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
               );
             }
           });
+          // if (videosToMerge.length - 1 == i) {
+          //   videosToMerge.clear();
+          //   emit(SaveRecordsSuccess());
+          // }
         });
       }
     }

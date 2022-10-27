@@ -33,7 +33,7 @@ class CancelUploadRawVideoEvent extends RawVideoEvent {
 }
 
 class UploadFlagEvent extends RawVideoEvent {
-  final List<FlagModel> tags;
+   List<FlagModel> tags = [];
   final String rawVideoId;
 
   UploadFlagEvent({required this.tags, required this.rawVideoId});

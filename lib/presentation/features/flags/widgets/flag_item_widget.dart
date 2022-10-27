@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:nice_shot/data/model/flag_model.dart';
 import 'package:nice_shot/data/model/video_model.dart';
-
 import '../../../../core/functions/functions.dart';
 import '../../../../core/themes/app_theme.dart';
 import '../../../../core/util/boxes.dart';

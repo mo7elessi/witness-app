@@ -60,7 +60,7 @@ class RawVideosRepositoryImpl extends RawVideosRepository {
             data: data,
             files: [
               FileItem(path: video.file!.path, field: 'file'),
-              FileItem(path: video.thumbnail!.path, field: 'thumbnail')
+              FileItem(path: "${video.thumbnail!.path}", field: 'thumbnail')
             ],
           ),
         );
