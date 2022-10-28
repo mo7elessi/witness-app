@@ -4,13 +4,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nice_shot/core/functions/functions.dart';
 import 'package:nice_shot/core/themes/app_theme.dart';
 import 'package:nice_shot/presentation/features/camera/widgets/zoom_widget.dart';
+import 'package:nice_shot/presentation/features/edited_videos/bloc/edited_video_bloc.dart';
 import 'package:nice_shot/presentation/widgets/loading_widget.dart';
 import 'package:nice_shot/presentation/features/camera/bloc/bloc.dart';
+import 'package:nice_shot/presentation/widgets/snack_bar_widget.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 import '../../../../core/routes/routes.dart';
+import '../../../../core/util/enums.dart';
 import '../../../../data/model/video_model.dart';
 import '../../../widgets/flag_count_widget.dart';
+import '../../main_layout/bloc/main_layout_bloc.dart';
 import '../widgets/actions_widget.dart';
 import '../widgets/resolutions_widget.dart';
 
@@ -52,7 +56,6 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
         ),
       );
       cameraBloc.add(OpenFlashEvent(open: true));
-
     }
   }
 
@@ -60,7 +63,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     CameraBloc controller = BlocProvider.of<CameraBloc>(context, listen: true);
     CameraBloc cameraBloc = BlocProvider.of<CameraBloc>(context, listen: false);
-
+    EditedVideoBloc videoBloc = context.read<EditedVideoBloc>();
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.black,
@@ -70,12 +73,20 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                     children: [
                       BlocConsumer<CameraBloc, CameraState>(
                           listener: (context, state) {
-                        if (cameraBloc.state is SaveRecordsSuccess) {
+                        if (state is SaveRecordsSuccess) {
                           Navigator.pushNamedAndRemoveUntil(
                             context,
                             Routes.homePage,
                             (route) => false,
                           );
+                        }
+                        if (state is SaveToHiveSuccess) {
+                          if (videoBloc.state.uploadingState !=
+                              RequestState.loading) {
+                            context.read<EditedVideoBloc>().add(
+                                  UploadEvent(context: context),
+                                );
+                          }
                         }
                       }, builder: (context, state) {
                         return GestureDetector(

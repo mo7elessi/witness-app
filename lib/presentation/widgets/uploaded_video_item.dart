@@ -194,9 +194,6 @@ class UploadedVideoItem extends StatelessWidget {
                   child: CachedNetworkImage(
                     fit: BoxFit.cover,
                     imageUrl: "${videoModel.thumbnailUrl}",
-                    progressIndicatorBuilder:
-                        (context, url, downloadProgress) =>
-                            const LoadingWidget(),
                     errorWidget: (context, url, error) =>
                         const Icon(Icons.error),
                   ),
@@ -206,12 +203,12 @@ class UploadedVideoItem extends StatelessWidget {
                     color: Colors.black.withOpacity(0.4),
                     borderRadius: BorderRadius.circular(50.0),
                   ),
-                  width: 50.0,
-                  height: 50.0,
+                  width: 40.0,
+                  height: 40.0,
                   child: Icon(
                     Icons.play_arrow,
                     color: Colors.white.withOpacity(0.8),
-                    size: 50.0,
+                    size: 40.0,
                   ),
                 ),
               ],
@@ -244,7 +241,8 @@ class UploadedVideoItem extends StatelessWidget {
                   borderRadius: BorderRadius.circular(50.0),
                 ),
                 child: Text(
-                  formatDuration(castingDuration(duration: videoModel.duration ?? "00:00:00.00")),
+                  formatDuration(castingDuration(
+                      duration: videoModel.duration ?? "00:00:00.00")),
                   style: Theme.of(context).textTheme.bodySmall!.copyWith(
                         color: Colors.white,
                       ),

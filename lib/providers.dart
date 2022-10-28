@@ -36,24 +36,24 @@ List<BlocProvider> providers = [
   ),
   BlocProvider<EditedVideoBloc>(
     create: (_) => EditedVideoBloc(
-      videosRepository: VideosRepositoryImpl(
-        networkInfo: NetworkInfoImpl(
-          connectionChecker: InternetConnectionChecker(),
-        ),
-      ),
-      rawVideoBloc: RawVideoBloc(
-        videosRepository: RawVideosRepositoryImpl(
+        videosRepository: VideosRepositoryImpl(
           networkInfo: NetworkInfoImpl(
             connectionChecker: InternetConnectionChecker(),
           ),
         ),
-        flagRepository: FlagRepositoryImpl(
-          networkInfo: NetworkInfoImpl(
-            connectionChecker: InternetConnectionChecker(),
+        rawVideoBloc: RawVideoBloc(
+          videosRepository: RawVideosRepositoryImpl(
+            networkInfo: NetworkInfoImpl(
+              connectionChecker: InternetConnectionChecker(),
+            ),
+          ),
+          flagRepository: FlagRepositoryImpl(
+            networkInfo: NetworkInfoImpl(
+              connectionChecker: InternetConnectionChecker(),
+            ),
           ),
         ),
-      ),
-    ),
+        mainBloc: MainLayoutBloc()),
   ),
   BlocProvider<RawVideoBloc>(
     create: (_) => RawVideoBloc(
@@ -81,26 +81,27 @@ List<BlocProvider> providers = [
   ),
   BlocProvider<MainLayoutBloc>(
     create: (_) => MainLayoutBloc(
-      videoBLoc: EditedVideoBloc(
-        videosRepository: VideosRepositoryImpl(
-          networkInfo: NetworkInfoImpl(
-            connectionChecker: InternetConnectionChecker(),
-          ),
-        ),
-        rawVideoBloc: RawVideoBloc(
-          videosRepository: RawVideosRepositoryImpl(
-            networkInfo: NetworkInfoImpl(
-              connectionChecker: InternetConnectionChecker(),
-            ),
-          ),
-          flagRepository: FlagRepositoryImpl(
-            networkInfo: NetworkInfoImpl(
-              connectionChecker: InternetConnectionChecker(),
-            ),
-          ),
-        ),
-      ),
-    )..add(GetSyncStateEvent()),
+        // videoBLoc: EditedVideoBloc(
+        //   videosRepository: VideosRepositoryImpl(
+        //     networkInfo: NetworkInfoImpl(
+        //       connectionChecker: InternetConnectionChecker(),
+        //     ),
+        //   ),
+        //   rawVideoBloc: RawVideoBloc(
+        //     videosRepository: RawVideosRepositoryImpl(
+        //       networkInfo: NetworkInfoImpl(
+        //         connectionChecker: InternetConnectionChecker(),
+        //       ),
+        //     ),
+        //     flagRepository: FlagRepositoryImpl(
+        //       networkInfo: NetworkInfoImpl(
+        //         connectionChecker: InternetConnectionChecker(),
+        //       ),
+        //     ),
+        //   ),
+        // ),
+        )
+      ..add(GetSyncStateEvent()),
   ),
   BlocProvider<UiBloc>(
     create: (_) => UiBloc(),

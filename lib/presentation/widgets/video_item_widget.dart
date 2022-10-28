@@ -10,6 +10,7 @@ import 'package:nice_shot/core/util/my_box_decoration.dart';
 import 'package:nice_shot/presentation/features/edited_videos/bloc/edited_video_bloc.dart';
 import 'package:nice_shot/presentation/widgets/action_widget.dart';
 import 'package:nice_shot/presentation/widgets/snack_bar_widget.dart';
+import 'package:nice_shot/presentation/widgets/upload_video_loading_widget.dart';
 import 'package:nice_shot/presentation/widgets/upload_video_state_widget.dart';
 import 'package:nice_shot/presentation/widgets/video_details_widget.dart';
 import 'package:nice_shot/presentation/widgets/video_image_widget.dart';
@@ -38,7 +39,6 @@ class VideoItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     TextEditingController controller = TextEditingController();
     EditedVideoBloc videoBloc = context.read<EditedVideoBloc>();
-    RawVideoBloc rawVideoBloc = context.read<RawVideoBloc>();
 
     return Padding(
       padding: const EdgeInsets.all(MySizes.widgetSideSpace),

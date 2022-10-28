@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nice_shot/presentation/features/raw_videos/bloc/raw_video_bloc.dart';
-import 'package:nice_shot/presentation/widgets/alert_dialog_widget.dart';
-
 import '../../core/themes/app_theme.dart';
 import '../features/edited_videos/bloc/edited_video_bloc.dart';
 
@@ -24,12 +21,12 @@ class UploadVideoLoadingWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
-            flex: 4,
+            flex: 3,
             child: LinearProgressIndicator(
               color: MyColors.primaryColor,
               value: progress.toDouble() / 100,
-              backgroundColor: Colors.grey.shade100,
-              minHeight: 5.0,
+              backgroundColor: Colors.grey.shade300,
+              minHeight: 12.0,
             ),
           ),
           const SizedBox(width: MySizes.horizontalSpace),
@@ -39,28 +36,27 @@ class UploadVideoLoadingWidget extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
-          const SizedBox(width: MySizes.horizontalSpace),
-          Expanded(
-            flex: 1,
-            child: InkWell(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialogWidget(
-                      message: "Are you sure cancel upload video?",
-                      title: "Cancel upload",
-                      function: (){
-                          videoBloc.add(CancelUploadVideoEvent(taskId: taskId));
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
-                );
-              },
-              child: const Icon(Icons.cancel, color: Colors.redAccent),
-            ),
-          ),
+          // const SizedBox(width: MySizes.horizontalSpace),
+          // Expanded(
+          //   child: InkWell(
+          //     onTap: () {
+          //       showDialog(
+          //         context: context,
+          //         builder: (context) {
+          //           return AlertDialogWidget(
+          //             message: "Are you sure cancel upload video?",
+          //             title: "Cancel upload",
+          //             function: (){
+          //                 videoBloc.add(CancelUploadVideoEvent(taskId: taskId));
+          //               Navigator.pop(context);
+          //             },
+          //           );
+          //         },
+          //       );
+          //     },
+          //     child: const Icon(Icons.cancel, color: Colors.redAccent),
+          //   ),
+          // ),
         ],
       ),
     );

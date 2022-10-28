@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_uploader/flutter_uploader.dart';
 import 'package:hive/hive.dart';
 import 'package:nice_shot/core/constants/constants.dart';
 import 'package:nice_shot/core/routes/routes.dart';
@@ -7,11 +9,14 @@ import 'package:nice_shot/data/model/flag_model.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 import '../../../../core/functions/functions.dart';
 import '../../../../core/util/boxes.dart';
+import '../../../../core/util/enums.dart';
 import '../../../../data/model/video_model.dart';
 import '../../../../data/mute_model.dart';
 import '../../../widgets/loading_widget.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/session_state.dart';
+
+import '../../edited_videos/bloc/edited_video_bloc.dart';
 
 class TrimmerPage extends StatefulWidget with ChangeNotifier {
   final File file;
@@ -170,9 +175,14 @@ class _TrimmerPageState extends State<TrimmerPage>
                           isLoading = true;
                           setState(() {});
                           await trimmer.saveTrimmedVideo(
-                            ffmpegCommand:
-                            mutedSections.isNotEmpty?MuteModel.ffmpegMuteCommand(mutedSections: mutedSections, startTrim: startValue.toInt(),endTrim:endTemp.toInt() ):null,
-                            customVideoFormat:mutedSections.isNotEmpty? ".mp4":null,
+                            ffmpegCommand: mutedSections.isNotEmpty
+                                ? MuteModel.ffmpegMuteCommand(
+                                    mutedSections: mutedSections,
+                                    startTrim: startValue.toInt(),
+                                    endTrim: endTemp.toInt())
+                                : null,
+                            customVideoFormat:
+                                mutedSections.isNotEmpty ? ".mp4" : null,
                             startValue: startValue * 1000,
                             endValue: endTemp * 1000,
                             onSave: (String? outputPath) async {
@@ -208,6 +218,15 @@ class _TrimmerPageState extends State<TrimmerPage>
                                           true,
                                   )
                                       .then((value) {
+                                    if (context
+                                            .read<EditedVideoBloc>()
+                                            .state
+                                            .uploadingState !=
+                                        RequestState.loading) {
+                                      context.read<EditedVideoBloc>().add(
+                                            UploadEvent(context: context),
+                                          );
+                                    }
                                     Navigator.pushNamedAndRemoveUntil(
                                       context,
                                       Routes.homePage,
@@ -351,66 +370,82 @@ class _TrimmerPageState extends State<TrimmerPage>
                       mutedSections: mutedSections,
                     ),
                   ),
-                  !isLoading?Expanded(
-                    child: TextButton(
-                      child: _isPlaying
-                          ? const Icon(
-                              Icons.pause,
-                              size: 50.0,
-                              color: Colors.white,
-                            )
-                          : const Icon(
-                              Icons.play_arrow,
-                              size: 50.0,
-                              color: Colors.white,
-                            ),
-                      onPressed: () async {
-                        if (currentMode == trimMode) {
-                          if (pausedValueTrimMode != -1) {
-                            pausedValueTrimMode = trimmer.videoPlayerController!
-                                .value.position.inSeconds;
-                          }
-                          bool playbackState =
-                              await trimmer.videPlaybackControl(
-                            startValue: ((pausedValueTrimMode == 0 ||
-                                        pausedValueTrimMode == endTemp ||
-                                        pausedValueTrimMode == endTemp - 1 ||
-                                        pausedValueTrimMode == -1)
-                                    ? (startValue)
-                                    : (pausedValueTrimMode)) *
-                                1000,
-                            endValue: endValue,
-                          );
-                          setState(() {
-                            _isPlaying = playbackState;
-                            pausedValueTrimMode = trimmer.videoPlayerController!
-                                .value.position.inSeconds;
-                          });
-                        } else {
-                          if (pausedValueMuteMode != -1) {
-                            pausedValueMuteMode = trimmer.videoPlayerController!
-                                .value.position.inSeconds;
-                          }
-                          bool playbackState =
-                              await trimmer.videPlaybackControl(
-                            startValue: ((pausedValueMuteMode == 0 ||
-                                        pausedValueMuteMode == endTemp ||
-                                        pausedValueMuteMode == endTemp - 1 ||
-                                        pausedValueMuteMode == -1)
-                                    ? (muteStart)
-                                    : (pausedValueMuteMode)) *
-                                1000,
-                            endValue: muteEnd.toDouble(),
-                          );
-                          setState(() {
-                            _isPlaying = playbackState;
-                            pausedValueMuteMode = trimmer.videoPlayerController!
-                                .value.position.inSeconds;
-                          });
-                        }
-                      },
-                    ),
-                  ):const LoadingWidget()
+                  !isLoading
+                      ? Expanded(
+                          child: TextButton(
+                            child: _isPlaying
+                                ? const Icon(
+                                    Icons.pause,
+                                    size: 50.0,
+                                    color: Colors.white,
+                                  )
+                                : const Icon(
+                                    Icons.play_arrow,
+                                    size: 50.0,
+                                    color: Colors.white,
+                                  ),
+                            onPressed: () async {
+                              if (currentMode == trimMode) {
+                                if (pausedValueTrimMode != -1) {
+                                  pausedValueTrimMode = trimmer
+                                      .videoPlayerController!
+                                      .value
+                                      .position
+                                      .inSeconds;
+                                }
+                                bool playbackState =
+                                    await trimmer.videPlaybackControl(
+                                  startValue: ((pausedValueTrimMode == 0 ||
+                                              pausedValueTrimMode == endTemp ||
+                                              pausedValueTrimMode ==
+                                                  endTemp - 1 ||
+                                              pausedValueTrimMode == -1)
+                                          ? (startValue)
+                                          : (pausedValueTrimMode)) *
+                                      1000,
+                                  endValue: endValue,
+                                );
+                                setState(() {
+                                  _isPlaying = playbackState;
+                                  pausedValueTrimMode = trimmer
+                                      .videoPlayerController!
+                                      .value
+                                      .position
+                                      .inSeconds;
+                                });
+                              } else {
+                                if (pausedValueMuteMode != -1) {
+                                  pausedValueMuteMode = trimmer
+                                      .videoPlayerController!
+                                      .value
+                                      .position
+                                      .inSeconds;
+                                }
+                                bool playbackState =
+                                    await trimmer.videPlaybackControl(
+                                  startValue: ((pausedValueMuteMode == 0 ||
+                                              pausedValueMuteMode == endTemp ||
+                                              pausedValueMuteMode ==
+                                                  endTemp - 1 ||
+                                              pausedValueMuteMode == -1)
+                                          ? (muteStart)
+                                          : (pausedValueMuteMode)) *
+                                      1000,
+                                  endValue: muteEnd.toDouble(),
+                                );
+                                setState(() {
+                                  _isPlaying = playbackState;
+                                  pausedValueMuteMode = trimmer
+                                      .videoPlayerController!
+                                      .value
+                                      .position
+                                      .inSeconds;
+                                });
+                              }
+                            },
+                          ),
+                        )
+                      : const LoadingWidget()
                 ],
               )
             : const Center(

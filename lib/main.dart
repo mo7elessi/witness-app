@@ -51,7 +51,6 @@ void main() async {
     permissionsGranted = value;
   });
   Widget? page;
-  await CacheHelper.saveData(key: "sync", value: false);
   final user = CacheHelper.getData(key: "user");
   if (user != null) {
     final data = LoginResponse.fromJson(json.decode(user));

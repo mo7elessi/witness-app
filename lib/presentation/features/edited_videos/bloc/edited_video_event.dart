@@ -8,17 +8,20 @@ class GetEditedVideosEvent extends EditedVideoEvent {
   GetEditedVideosEvent({required this.id});
 }
 
-class UploadVideoEvent extends EditedVideoEvent{
+class UploadVideoEvent extends EditedVideoEvent {
   final VideoModel video;
+  final Box<localVideo.VideoModel> box;
   final bool isEditedVideo;
+  final BuildContext context;
   List<FlagModel>? tags = [];
 
   UploadVideoEvent({
     required this.video,
     required this.isEditedVideo,
-     this.tags,
+    required this.context,
+    required this.box,
+    this.tags,
   });
-
 }
 
 class UpdateVideoEvent extends EditedVideoEvent {
@@ -35,7 +38,11 @@ class DeleteEditedVideoEvent extends EditedVideoEvent {
 
 //class CheckVideosEvent extends EditedVideoEvent {}
 
-class UploadEvent extends EditedVideoEvent {}
+class UploadEvent extends EditedVideoEvent {
+  final BuildContext context;
+
+  UploadEvent({required this.context});
+}
 
 class CancelUploadVideoEvent extends EditedVideoEvent {
   final String taskId;

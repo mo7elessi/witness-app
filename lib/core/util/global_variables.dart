@@ -11,6 +11,8 @@ bool permissionsGranted = false;
 
 LoginResponse? get user => _loginResponse;
 
+bool sync = false;
+
 String? get token => _token;
 
 String get userId => _id!;
