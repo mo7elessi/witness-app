@@ -16,7 +16,7 @@ part 'user_event.dart';
 part 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
-  final UserRepository userRepository;
+  final UserRepositoryImpl userRepository;
   final NetworkBloc networkBloc;
 
   UserBloc({

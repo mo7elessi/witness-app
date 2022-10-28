@@ -25,7 +25,7 @@ part 'edited_video_event.dart';
 part 'edited_video_state.dart';
 
 class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
-  final EditedVideosRepository videosRepository;
+  final VideosRepositoryImpl videosRepository;
   final RawVideoBloc rawVideoBloc;
   final MainLayoutBloc mainBloc;
   StreamSubscription? _progressSubscription;
@@ -93,12 +93,12 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
           if (event.isEditedVideo) {
             add(GetEditedVideosEvent(id: userId));
           } else if (tags!.isNotEmpty) {
-            event.context.read<RawVideoBloc>().add(
-                  UploadFlagEvent(
-                    tags: tags,
-                    rawVideoId: id,
-                  ),
-                );
+            rawVideoBloc.add(
+              UploadFlagEvent(
+                tags: tags,
+                rawVideoId: id,
+              ),
+            );
           }
         }
       },
@@ -188,7 +188,7 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
     Emitter<EditedVideoState> emit,
   ) async {
     Box<localVideo.VideoModel>? box;
-    if (sync == true) {
+    if (mainBloc.isSync == true) {
       List<localVideo.VideoModel> rawVideos = Boxes.videoBox.values
           .toList()
           .where((element) => element.isUploaded != true)

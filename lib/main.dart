@@ -27,6 +27,7 @@ import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  await di.init();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -41,7 +42,7 @@ void main() async {
   File(logoPath).writeAsBytes(byteData.buffer
       .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
   await CacheHelper.init();
-  await di.init();
+
   final directory = await path.getApplicationDocumentsDirectory();
   Hive.init(directory.path);
   await Hive.initFlutter();

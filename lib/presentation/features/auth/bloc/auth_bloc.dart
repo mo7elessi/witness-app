@@ -15,7 +15,7 @@ part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final UserRepository userRepository;
+  final UserRepositoryImpl userRepository;
   final NetworkBloc networkBloc;
 
   AuthBloc({required this.userRepository, required this.networkBloc})
