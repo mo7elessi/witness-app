@@ -9,6 +9,7 @@ class ChangeScaffoldBodyEvent extends MainLayoutEvent {
   ChangeScaffoldBodyEvent(this.index);
 }
 
-class SyncEvent extends MainLayoutEvent {}
+class SyncEvent extends MainLayoutEvent {
+}
 
 class GetSyncStateEvent extends MainLayoutEvent {}

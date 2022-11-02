@@ -16,7 +16,7 @@ class UploadedRawEditedVideoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(MySizes.widgetSideSpace),
+      padding: const EdgeInsets.all(MySizes.widgetSideSpace / 2),
       child: BlocBuilder<RawVideoBloc, RawVideoState>(
         builder: (context, state) {
           if (state.requestState == RequestState.loading) {
@@ -28,7 +28,7 @@ class UploadedRawEditedVideoPage extends StatelessWidget {
                     crossAxisCount: 2,
                     mainAxisSpacing: 8.0,
                     crossAxisSpacing: 8.0,
-                    childAspectRatio: 1 / 1,
+                    childAspectRatio: 1 / 1.2,
                     children: List.generate(state.data!.data!.length, (index) {
                       VideoModel data = state.data!.data![index];
                       return UploadedVideoItem(

@@ -18,8 +18,8 @@ part 'raw_video_event.dart';
 part 'raw_video_state.dart';
 
 class RawVideoBloc extends Bloc<RawVideoEvent, RawVideoState> {
-  final RawVideosRepository videosRepository;
-  final FlagRepository flagRepository;
+  final RawVideosRepositoryImpl videosRepository;
+  final FlagRepositoryImpl flagRepository;
   StreamSubscription? _progressSubscription;
   StreamSubscription? _resultSubscription;
 

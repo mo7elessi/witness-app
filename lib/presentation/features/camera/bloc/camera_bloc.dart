@@ -186,6 +186,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       imageFormat: video_thumbnail.ImageFormat.JPEG,
     ).then((value) async {
       await Boxes.videoBox.add(videoModel..videoThumbnail = value!);
+      emit(SaveToHiveSuccess());
     });
   }
 

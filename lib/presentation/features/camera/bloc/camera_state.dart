@@ -48,6 +48,8 @@ class SaveRecordsLoading extends CameraState {}
 
 class SaveRecordsSuccess extends CameraState {}
 
+class SaveToHiveSuccess extends CameraState {}
+
 class SaveRecordsError extends CameraState {
   final String message;
 

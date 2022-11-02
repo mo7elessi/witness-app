@@ -9,6 +9,7 @@ class EditedVideoState extends Equatable {
   final String? taskId;
   final String? path;
   final int? progressValue;
+  final Box<localVideo.VideoModel>? box;
 
   const EditedVideoState({
     this.video,
@@ -19,6 +20,7 @@ class EditedVideoState extends Equatable {
     this.path,
     this.progressValue,
     this.taskId,
+    this.box,
   });
 
   @override
@@ -32,6 +34,7 @@ class EditedVideoState extends Equatable {
         progressValue,
         uploadingState,
         taskId,
+    box,
       ];
 
   EditedVideoState copyWith({
@@ -43,6 +46,7 @@ class EditedVideoState extends Equatable {
     int? progressValue,
     RequestState? uploadingState,
     String? taskId,
+    Box<localVideo.VideoModel>? box,
   }) {
     return EditedVideoState(
       requestState: requestState ?? this.requestState,
@@ -53,6 +57,7 @@ class EditedVideoState extends Equatable {
       progressValue: progressValue ?? this.progressValue,
       uploadingState: uploadingState ?? this.uploadingState,
       taskId: taskId ?? this.taskId,
+      box: box ?? this.box,
     );
   }
 }

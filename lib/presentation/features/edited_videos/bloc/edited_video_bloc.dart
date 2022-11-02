@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:nice_shot/core/functions/functions.dart';
 import 'package:nice_shot/core/util/boxes.dart';
 import 'package:nice_shot/core/util/global_variables.dart';
@@ -12,9 +14,10 @@ import 'package:nice_shot/core/util/enums.dart';
 import 'package:nice_shot/data/model/api/data_model.dart';
 import 'package:nice_shot/data/model/api/pagination.dart';
 import 'package:nice_shot/data/repositories/edited_video_repository.dart';
+import 'package:nice_shot/presentation/features/main_layout/bloc/main_layout_bloc.dart';
 import '../../../../data/model/api/video_model.dart';
+import '../../../../data/model/video_model.dart' as localVideo;
 import '../../../../data/model/flag_model.dart';
-import '../../../../data/model/video_model.dart' as video;
 import '../../raw_videos/bloc/raw_video_bloc.dart';
 
 part 'edited_video_event.dart';
@@ -22,20 +25,16 @@ part 'edited_video_event.dart';
 part 'edited_video_state.dart';
 
 class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
-  final EditedVideosRepository videosRepository;
+  final VideosRepositoryImpl videosRepository;
   final RawVideoBloc rawVideoBloc;
+  final MainLayoutBloc mainBloc;
   StreamSubscription? _progressSubscription;
-  StreamSubscription? _resultSubscription;
 
   EditedVideoBloc({
     required this.rawVideoBloc,
     required this.videosRepository,
+    required this.mainBloc,
   }) : super(const EditedVideoState()) {
-    // on((event, emit){
-    //   if(state.uploadingState == RequestState.loaded){
-    //     add(UploadEvent());
-    //   }
-    // });
     on<UploadVideoEvent>(_uploadVideo);
     on<GetEditedVideosEvent>(_getEditedVideos);
     on<DeleteEditedVideoEvent>(_deleteEditedVideo);
@@ -48,11 +47,11 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
     UploadVideoEvent event,
     Emitter<EditedVideoState> emit,
   ) async {
-    _progressSubscription?.cancel();
-    await videosRepository.editedVideoUploader.clearUploads();
     VideoModel video = event.video;
     String path = video.file!.path;
     final tags = event.tags;
+    await _progressSubscription?.cancel();
+    await videosRepository.editedVideoUploader.clearUploads();
     _progressSubscription =
         videosRepository.editedVideoUploader.progress.listen((progress) {
       emit(state.copyWith(
@@ -71,20 +70,21 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
       (failure) {
         emit(state.copyWith(
           uploadingState: RequestState.error,
+          box: event.box,
           message: mapFailureToMessage(failure: failure),
         ));
       },
       (response) async {
         emit(state.copyWith(
           uploadingState: RequestState.loaded,
+          path: path,
           message: response.statusCode != null
               ? UPLOAD_SUCCESS_MESSAGE
               : UPLOAD_ERROR_MESSAGE,
         ));
-        _progressSubscription!.cancel();
-        await videosRepository.editedVideoUploader.clearUploads();
 
-        if (response.statusCode != null) {
+        add(UploadEvent(context: event.context));
+        if (response.statusCode == 201) {
           String id = response.response!
               .split(":")[11]
               .split(",")
@@ -92,10 +92,13 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
               .replaceAll('"', "");
           if (event.isEditedVideo) {
             add(GetEditedVideosEvent(id: userId));
-          } else {
-            if (tags!.isNotEmpty) {
-              rawVideoBloc.add(UploadFlagEvent(tags: tags, rawVideoId: id));
-            }
+          } else if (tags!.isNotEmpty) {
+            rawVideoBloc.add(
+              UploadFlagEvent(
+                tags: tags,
+                rawVideoId: id,
+              ),
+            );
           }
         }
       },
@@ -184,31 +187,50 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
     UploadEvent event,
     Emitter<EditedVideoState> emit,
   ) async {
-    Boxes.videoBox.values.toList().forEach((element) {
-      if (element.isUploaded != true) {
+    Box<localVideo.VideoModel>? box;
+    if (mainBloc.isSync == true) {
+      List<localVideo.VideoModel> rawVideos = Boxes.videoBox.values
+          .toList()
+          .where((element) => element.isUploaded != true)
+          .toList();
+      List<localVideo.VideoModel> editedVideos = Boxes.exportedVideoBox.values
+          .toList()
+          .where((element) => element.isUploaded != true)
+          .toList();
+      if (rawVideos.isNotEmpty) {
+        box = Boxes.videoBox;
+      } else if (editedVideos.isNotEmpty) {
+        box = Boxes.exportedVideoBox;
+      } else {
+        box = Boxes.videoBox;
+      }
+      List list = box == Boxes.videoBox ? rawVideos : editedVideos;
+      final element = list.toList();
+      if (list.isNotEmpty) {
         final video = VideoModel(
           categoryId: "1",
-          name: element.title ?? "No title",
+          name: element.first.title == null
+              ? element.first.path!.split("/").last
+              : element.first.path!.split("_").last,
           userId: userId,
-          duration: "${element.videoDuration}",
-          thumbnail: File(element.videoThumbnail!),
-          file: File(element.path!),
+          duration: "${element.first.videoDuration}",
+          thumbnail: File(element.first.videoThumbnail!),
+          file: File(element.first.path!),
         );
         add(UploadVideoEvent(
           video: video,
-          tags: element.flags,
-          isEditedVideo: false,
+          tags: element.first.flags,
+          isEditedVideo: box == Boxes.videoBox ? false : true,
+          context: event.context,
+          box: box,
         ));
-      } else {
-        _resultSubscription?.cancel();
       }
-    });
+    }
   }
 
   @override
   Future<void> close() {
     _progressSubscription!.cancel();
-    _resultSubscription!.cancel();
     return super.close();
   }
 }
