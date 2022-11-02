@@ -1,3 +1,4 @@
+import 'package:flutter_video_info/flutter_video_info.dart';
 import 'package:hive/hive.dart';
 import 'package:nice_shot/data/model/data_model.dart';
 
@@ -14,6 +15,8 @@ class VideoModel extends DataModel {
   String? videoThumbnail;
   @HiveField(7)
   bool? isUploaded;
+  @HiveField(8)
+  VideoData? videoData;
   VideoModel({
     super.id,
     super.videoDuration,

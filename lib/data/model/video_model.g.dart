@@ -16,7 +16,6 @@ class VideoModelAdapter extends TypeAdapter<VideoModel> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-
     return VideoModel(
       id: fields[0] as String?,
       videoDuration: fields[3] as String?,
@@ -26,13 +25,13 @@ class VideoModelAdapter extends TypeAdapter<VideoModel> {
       flags: (fields[5] as List?)?.cast<FlagModel>(),
       videoThumbnail: fields[6] as String?,
       isUploaded: fields[7] as bool?,
-    );
+    )..videoData = fields[8] as VideoData?;
   }
 
   @override
   void write(BinaryWriter writer, VideoModel obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(4)
       ..write(obj.dateTime)
       ..writeByte(5)
@@ -41,6 +40,8 @@ class VideoModelAdapter extends TypeAdapter<VideoModel> {
       ..write(obj.videoThumbnail)
       ..writeByte(7)
       ..write(obj.isUploaded)
+      ..writeByte(8)
+      ..write(obj.videoData)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
