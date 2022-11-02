@@ -37,6 +37,9 @@ void main() async {
   FFmpegKitConfig.enableFFmpegSessionCompleteCallback((session) {
     final sessionId = session.getSessionId();
   });
+  FFmpegKitConfig.enableStatisticsCallback((statistics) {
+    final size = statistics.getSize();
+  });
   String logoPath = await getLogoPath();
   File(logoPath).writeAsBytes(byteData.buffer
       .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));

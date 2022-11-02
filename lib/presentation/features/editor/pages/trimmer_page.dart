@@ -21,9 +21,14 @@ class TrimmerPage extends StatefulWidget with ChangeNotifier {
   final int flagIndex;
   final int videoIndex;
   final Duration videoDuration;
+  static int pausedValueTrimMode=-1;
+  static int pausedValueMuteMode=-1;
   static ValueNotifier<bool> deletingMode = ValueNotifier<bool>(false);
   static ValueNotifier<int> deletingIndex = ValueNotifier<int>(0);
+  static bool isWrongStartMuteValueDetected=false;
+  static bool isWrongEndMuteValueDetected=false;
   static MuteModel? model;
+  static bool doesIndexChanges = false;
 
   TrimmerPage({
     Key? key,
@@ -49,8 +54,6 @@ class _TrimmerPageState extends State<TrimmerPage>
   double endTemp = 0;
   bool showSnackBarEnd = true;
   bool showSnackBarRight = true;
-  int pausedValueTrimMode = 0;
-  int pausedValueMuteMode = 0;
   bool isLoading = false;
   bool showNumberPickerDialog = false;
   bool doMute = false;
@@ -60,9 +63,8 @@ class _TrimmerPageState extends State<TrimmerPage>
   double muteStart = 0;
   double muteEnd = 0;
   int scrubberRebuild = 0;
-
-  ///initialMode==trimMode
-  late TabController _tabController;
+  bool pauseVideoClick = false;
+  TabController? _tabController;
 
   @override
   void initState() {
@@ -78,9 +80,10 @@ class _TrimmerPageState extends State<TrimmerPage>
   @override
   void dispose() {
     super.dispose();
+    TrimmerPage.deletingIndex.dispose();
     TrimmerPage.deletingMode.dispose();
     trimmer.dispose();
-    _tabController.dispose();
+    _tabController!.dispose();
   }
 
   @override
@@ -92,7 +95,8 @@ class _TrimmerPageState extends State<TrimmerPage>
         appBar: AppBar(
           bottom: TabBar(
               onTap: (index) {
-                if (_tabController.indexIsChanging) {
+                if (_tabController!.indexIsChanging) {
+                  TrimmerPage.doesIndexChanges = true;
                   currentMode = index;
                   scrubberRebuild = currentMode == trimMode ? 0 : 1;
                   setState(() {
@@ -140,7 +144,6 @@ class _TrimmerPageState extends State<TrimmerPage>
             ValueListenableBuilder(
                 valueListenable: TrimmerPage.deletingMode,
                 builder: (context, bool, text) {
-                  print(bool);
                   return bool == true
                       ? InkWell(
                           child: const Icon(Icons.delete),
@@ -170,9 +173,14 @@ class _TrimmerPageState extends State<TrimmerPage>
                           isLoading = true;
                           setState(() {});
                           await trimmer.saveTrimmedVideo(
-                            ffmpegCommand:
-                            mutedSections.isNotEmpty?MuteModel.ffmpegMuteCommand(mutedSections: mutedSections, startTrim: startValue.toInt(),endTrim:endTemp.toInt() ):null,
-                            customVideoFormat:mutedSections.isNotEmpty? ".mp4":null,
+                            ffmpegCommand: mutedSections.isNotEmpty
+                                ? MuteModel.ffmpegMuteCommand(
+                                    mutedSections: mutedSections,
+                                    startTrim: startValue.toInt(),
+                                    endTrim: endTemp.toInt())
+                                : null,
+                            customVideoFormat:
+                                mutedSections.isNotEmpty ? ".mp4" : null,
                             startValue: startValue * 1000,
                             endValue: endTemp * 1000,
                             onSave: (String? outputPath) async {
@@ -189,7 +197,6 @@ class _TrimmerPageState extends State<TrimmerPage>
                               FFmpegKit.executeAsync(command, (session) async {
                                 SessionState state = await session.getState();
                                 if (state == SessionState.completed) {
-                                  print(session.getCommand().toString());
                                   File(outputPath.toString()).deleteSync();
                                   VideoModel videoModel = VideoModel(
                                     id: widget.flag.id,
@@ -215,12 +222,10 @@ class _TrimmerPageState extends State<TrimmerPage>
                                     );
                                   });
                                 } else {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(const SnackBar(
-                                      content: Text("something went wrong"),
-                                    ));
-                                  }
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(const SnackBar(
+                                    content: Text("something went wrong"),
+                                  ));
                                 }
                               });
                             },
@@ -273,72 +278,76 @@ class _TrimmerPageState extends State<TrimmerPage>
                       trimmer: trimmer,
                       viewerWidth: MediaQuery.of(context).size.width,
                       onChangeStart: (value) {
+                        TrimmerPage.pausedValueTrimMode=-1;
+                        TrimmerPage.pausedValueMuteMode=-1;
                         if (currentMode == muteMode &&
                             isProcessingMode == false) {
                           isProcessingMode = true;
                         }
-                        setState(() {
-                          if (currentMode == trimMode) {
-                            startValue = (value / 1000);
+                        if (currentMode == trimMode) {
+                          startValue = (value / 1000);
+                          muteStart = value / 1000;
+                        } else {
+                          if (startValue > (value / 1000)) {
+                            TrimmerPage.isWrongStartMuteValueDetected=true;
+                            if (showSnackBarRight) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(const SnackBar(
+                                backgroundColor: Colors.white,
+                                content: Text(
+                                  "couldn't Mute outside of specified trimming area.",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ));
+                            }
+                            showSnackBarRight = false;
                           } else {
                             muteStart = value / 1000;
-                            if (muteStart < startValue) {
-                              muteStart = startValue;
-                              if (showSnackBarRight) {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(const SnackBar(
-                                  backgroundColor: Colors.white,
-                                  content: Text(
-                                    "couldn't Mute outside of specified trimming area.",
-                                    style: TextStyle(color: Colors.black),
-                                  ),
-                                ));
-                              }
-                              showSnackBarRight = false;
-                            }
                           }
-                        });
+                        }
                       },
                       onChangeEnd: (value) {
+                        TrimmerPage.pausedValueTrimMode=-1;
+                       TrimmerPage.pausedValueMuteMode=-1;
                         if (currentMode == muteMode &&
                             isProcessingMode == false) {
                           isProcessingMode = true;
                         }
-                        setState(() {
-                          if (currentMode == trimMode) {
-                            endValue = value / 1000;
-                            endTemp = endValue;
+                        if (currentMode == trimMode) {
+                          endValue = value / 1000;
+                          endTemp = endValue;
+                          muteEnd = value / 1000;
+                        } else {
+                          if ((value / 1000) > endTemp) {
+                            TrimmerPage.isWrongEndMuteValueDetected=true;
+                            if (showSnackBarEnd) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(const SnackBar(
+                                backgroundColor: Colors.white,
+                                content: Text(
+                                  "couldn't Mute outside of specified trimming area.",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ));
+                            }
+                            showSnackBarEnd = false;
                           } else {
                             muteEnd = value / 1000;
-                            if (muteEnd > endTemp) {
-                              muteEnd = endTemp;
-                              if (showSnackBarEnd) {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(const SnackBar(
-                                  backgroundColor: Colors.white,
-                                  content: Text(
-                                    "couldn't Mute outside of specified trimming area.",
-                                    style: TextStyle(color: Colors.black),
-                                  ),
-                                ));
-                              }
-                              showSnackBarEnd = false;
-                            }
                           }
-                          trimmer.videoPlayerController!
-                              .seekTo(const Duration(seconds: 0));
-                          if (currentMode == trimMode) {
-                            pausedValueTrimMode = trimmer.videoPlayerController!
-                                    .value.position.inSeconds
-                                    .toInt() -
-                                1;
-                          } else {
-                            pausedValueMuteMode = trimmer.videoPlayerController!
-                                    .value.position.inSeconds
-                                    .toInt() -
-                                1;
-                          }
-                        });
+                        }
+                        trimmer.videoPlayerController!
+                            .seekTo(const Duration(seconds: 0));
+                        if (currentMode == trimMode) {
+                          TrimmerPage.pausedValueTrimMode = trimmer.videoPlayerController!
+                                  .value.position.inSeconds
+                                  .toInt() -
+                              1;
+                        } else {
+                         TrimmerPage.pausedValueMuteMode = trimmer.videoPlayerController!
+                                  .value.position.inSeconds
+                                  .toInt() -
+                              1;
+                        }
                       },
                       onChangePlaybackState: (value) {
                         setState(() {
@@ -351,66 +360,68 @@ class _TrimmerPageState extends State<TrimmerPage>
                       mutedSections: mutedSections,
                     ),
                   ),
-                  !isLoading?Expanded(
-                    child: TextButton(
-                      child: _isPlaying
-                          ? const Icon(
-                              Icons.pause,
-                              size: 50.0,
-                              color: Colors.white,
-                            )
-                          : const Icon(
-                              Icons.play_arrow,
-                              size: 50.0,
-                              color: Colors.white,
-                            ),
-                      onPressed: () async {
-                        if (currentMode == trimMode) {
-                          if (pausedValueTrimMode != -1) {
-                            pausedValueTrimMode = trimmer.videoPlayerController!
-                                .value.position.inSeconds;
-                          }
-                          bool playbackState =
-                              await trimmer.videPlaybackControl(
-                            startValue: ((pausedValueTrimMode == 0 ||
-                                        pausedValueTrimMode == endTemp ||
-                                        pausedValueTrimMode == endTemp - 1 ||
-                                        pausedValueTrimMode == -1)
-                                    ? (startValue)
-                                    : (pausedValueTrimMode)) *
-                                1000,
-                            endValue: endValue,
-                          );
-                          setState(() {
-                            _isPlaying = playbackState;
-                            pausedValueTrimMode = trimmer.videoPlayerController!
-                                .value.position.inSeconds;
-                          });
-                        } else {
-                          if (pausedValueMuteMode != -1) {
-                            pausedValueMuteMode = trimmer.videoPlayerController!
-                                .value.position.inSeconds;
-                          }
-                          bool playbackState =
-                              await trimmer.videPlaybackControl(
-                            startValue: ((pausedValueMuteMode == 0 ||
-                                        pausedValueMuteMode == endTemp ||
-                                        pausedValueMuteMode == endTemp - 1 ||
-                                        pausedValueMuteMode == -1)
-                                    ? (muteStart)
-                                    : (pausedValueMuteMode)) *
-                                1000,
-                            endValue: muteEnd.toDouble(),
-                          );
-                          setState(() {
-                            _isPlaying = playbackState;
-                            pausedValueMuteMode = trimmer.videoPlayerController!
-                                .value.position.inSeconds;
-                          });
-                        }
-                      },
-                    ),
-                  ):const LoadingWidget()
+                  !isLoading
+                      ? Expanded(
+                          child: TextButton(
+                            child: _isPlaying
+                                ? const Icon(
+                                    Icons.pause,
+                                    size: 50.0,
+                                    color: Colors.white,
+                                  )
+                                : const Icon(
+                                    Icons.play_arrow,
+                                    size: 50.0,
+                                    color: Colors.white,
+                                  ),
+                            onPressed: () async {
+                              if (currentMode == trimMode) {
+                                bool playbackState =
+                                    await trimmer.videPlaybackControl(
+                                  startValue: ((TrimmerPage.pausedValueTrimMode == 0 ||
+                                              TrimmerPage.pausedValueTrimMode == endTemp ||
+                                              TrimmerPage.pausedValueTrimMode ==
+                                                  endTemp - 1 ||
+                                              TrimmerPage.pausedValueTrimMode == -1)
+                                          ? (startValue)
+                                          : (TrimmerPage.pausedValueTrimMode)) *
+                                      1000,
+                                  endValue: endValue,
+                                );
+                                setState(() {
+                                  _isPlaying = playbackState;
+                                  TrimmerPage.pausedValueTrimMode = trimmer
+                                      .videoPlayerController!
+                                      .value
+                                      .position
+                                      .inSeconds;
+                                });
+                              } else {
+                                bool playbackState =
+                                    await trimmer.videPlaybackControl(
+                                  startValue: ((TrimmerPage.pausedValueMuteMode == 0 ||
+                                              TrimmerPage.pausedValueMuteMode == endTemp ||
+                                             TrimmerPage.pausedValueMuteMode ==
+                                                  endTemp - 1 ||
+                                              TrimmerPage.pausedValueMuteMode == -1)
+                                          ? (muteStart)
+                                          : (TrimmerPage.pausedValueMuteMode)) *
+                                      1000,
+                                  endValue: muteEnd.toDouble(),
+                                );
+                                setState(() {
+                                  _isPlaying = playbackState;
+                                  TrimmerPage.pausedValueMuteMode = trimmer
+                                      .videoPlayerController!
+                                      .value
+                                      .position
+                                      .inSeconds;
+                                });
+                              }
+                            },
+                          ),
+                        )
+                      : const LoadingWidget()
                 ],
               )
             : const Center(
@@ -420,3 +431,8 @@ class _TrimmerPageState extends State<TrimmerPage>
     );
   }
 }
+// Looking up a deactivated widget's ancestor is unsafe.
+//
+// At this point the state of the widget's element tree is no longer stable.
+//
+// To safely refer to a widget's ancestor in its dispose() method, save a reference to the ancestor by calling dependOnInheritedWidgetOfExactType() in the widget's didChangeDependencies() method.
