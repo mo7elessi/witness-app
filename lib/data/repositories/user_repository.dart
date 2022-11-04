@@ -61,7 +61,10 @@ class UserRepositoryImpl extends UserRepository {
     });
     if (await networkInfo.isConnected) {
       DioHelper.dio!.options.headers = DioHelper.headers;
-      final response = await DioHelper.dio!.post(Endpoints.user, data: data);
+      final response =
+          await DioHelper.dio!.post(Endpoints.user, data: data).timeout(
+                const Duration(minutes: 1),
+              );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return const Right(unit);
       } else if (response.statusCode == 422) {
@@ -129,7 +132,6 @@ class UserRepositoryImpl extends UserRepository {
       'mobile': userModel.mobile,
       'nationality': userModel.nationality,
       'birth_date': userModel.birthDate,
-
     };
     if (await networkInfo.isConnected) {
       try {
@@ -205,6 +207,7 @@ class UserRepositoryImpl extends UserRepository {
       return DioHelper.deleteData(url: "${Endpoints.user}/$userId");
     });
   }
+
   Future<Either<Failure, Unit>> _getMessage(CRUD crud) async {
     if (await networkInfo.isConnected) {
       try {

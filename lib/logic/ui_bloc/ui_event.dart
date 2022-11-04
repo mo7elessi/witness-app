@@ -2,6 +2,7 @@ part of 'ui_bloc.dart';
 
 @immutable
 abstract class UiEvent {}
+
 class PickUserImageEvent extends UiEvent {}
 
 class PickProfileImageEvent extends UiEvent {}

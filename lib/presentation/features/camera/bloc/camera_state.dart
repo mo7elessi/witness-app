@@ -1,5 +1,3 @@
-import 'package:nice_shot/data/model/video_model.dart';
-
 abstract class CameraState {
   const CameraState();
 }

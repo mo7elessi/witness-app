@@ -1,8 +1,7 @@
 import 'package:nice_shot/data/model/api/User_model.dart';
 
 class ListData {
-  ListData({
-      this.data,});
+  ListData({this.data});
 
   ListData.fromJson(dynamic json) {
     if (json['data'] != null) {
@@ -12,6 +11,7 @@ class ListData {
       });
     }
   }
+
   List<UserModel>? data;
 
   Map<String, dynamic> toJson() {
@@ -21,5 +21,4 @@ class ListData {
     }
     return map;
   }
-
 }

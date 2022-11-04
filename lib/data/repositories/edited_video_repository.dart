@@ -4,7 +4,6 @@ import 'package:nice_shot/core/error/exceptions.dart';
 import 'package:nice_shot/core/error/failure.dart';
 import 'package:nice_shot/core/util/global_variables.dart';
 import 'package:nice_shot/data/model/api/video_model.dart';
-import 'package:nice_shot/data/network/end_points.dart';
 import 'package:nice_shot/data/network/remote/dio_helper.dart';
 import 'package:flutter_uploader/flutter_uploader.dart';
 import '../../core/network/network_info.dart';
@@ -12,65 +11,80 @@ import '../model/api/pagination.dart';
 
 typedef Generic = Either<Failure, UploadTaskResponse>;
 
-abstract class EditedVideosRepository {
+abstract class VideoRepository {
   Future<Generic> uploadVideo({
     required VideoModel video,
-    required bool isEditedVideo,
+    required String videoEndPoint,
   });
 
-  Future<Either<Failure, Pagination>> getEditedVideos({required String id});
+  Future<Either<Failure, Pagination>> getVideos({
+    required String videoEndPoint,
+  });
 
-  Future<MyResponse> deleteEditedVideo({required String id});
+  Future<MyResponse> deleteVideo({
+    required String id,
+    required String videoEndPoint,
+  });
 
-  Future<MyResponse> cancelUploadVideo({required String id});
+  Future<MyResponse> cancelUploadVideo({
+    required String id,
+  });
 
-  Future<MyResponse> updateVideo({required VideoModel video});
+  Future<MyResponse> updateVideo({
+    required VideoModel video,
+    required String videoEndPoint,
+  });
 
-  abstract FlutterUploader editedVideoUploader;
+  abstract FlutterUploader videoUploader;
 }
 
-class VideosRepositoryImpl extends EditedVideosRepository {
+class VideoRepositoryImpl extends VideoRepository {
   final NetworkInfo networkInfo;
+  StreamSubscription<UploadTaskResponse>? _subscription;
 
-  VideosRepositoryImpl({required this.networkInfo});
+  VideoRepositoryImpl({required this.networkInfo});
 
   @override
-  FlutterUploader editedVideoUploader = FlutterUploader();
+  FlutterUploader videoUploader = FlutterUploader();
 
   @override
   Future<Generic> uploadVideo({
     required VideoModel video,
-    required bool isEditedVideo,
+    required String videoEndPoint,
   }) async {
     Map<String, String> data = {
       "name": video.name!,
-      "user_id": video.userId!,
+      "user_id": video.userId,
       "category_id": video.categoryId!,
       "duration": video.duration!,
     };
     if (await networkInfo.isConnected) {
       try {
-        DioHelper.dio!.options.headers = DioHelper.headers;
-        await editedVideoUploader.enqueue(
+        await videoUploader.enqueue(
           MultipartFormDataUpload(
             method: UploadMethod.POST,
-            url:
-                "${DioHelper.baseUrl}${isEditedVideo ? Endpoints.editedVideos : Endpoints.rawVideos}",
+            url: "${DioHelper.baseUrl}$videoEndPoint",
             headers: DioHelper.headers,
             tag: "upload",
             data: data,
+            allowCellular: true,
             files: [
               FileItem(path: video.file!.path, field: 'file'),
               FileItem(path: "${video.thumbnail!.path}", field: 'thumbnail')
             ],
           ),
         );
-        final response = await editedVideoUploader.result.firstWhere(
+
+        final response = await videoUploader.result.firstWhere(
           (element) => element.statusCode == 201,
         );
 
-        return Right(response);
-      } on ServerException {
+        if (response.statusCode == 201) {
+          return Right(response);
+        } else {
+          return Left(ServerFailure());
+        }
+      } on Exception {
         return Left(ServerFailure());
       }
     } else {
@@ -79,13 +93,13 @@ class VideosRepositoryImpl extends EditedVideosRepository {
   }
 
   @override
-  Future<Either<Failure, Pagination>> getEditedVideos({
-    required String id,
+  Future<Either<Failure, Pagination>> getVideos({
+    required String videoEndPoint,
   }) async {
     if (await networkInfo.isConnected) {
       try {
         final response = await DioHelper.getData(
-          url: "${Endpoints.editedVideos}/?user_id=$id",
+          url: "$videoEndPoint/?user_id=$userId",
         );
         return Right(Pagination.fromJson(response.data));
       } on ServerException {
@@ -97,18 +111,25 @@ class VideosRepositoryImpl extends EditedVideosRepository {
   }
 
   @override
-  Future<MyResponse> deleteEditedVideo({required String id}) async {
+  Future<MyResponse> deleteVideo({
+    required String id,
+    required String videoEndPoint,
+  }) async {
     return await _getMessage(() {
       return DioHelper.deleteData(
-        url: "${Endpoints.editedVideos}/$id",
+        url: "$videoEndPoint/$id",
       );
     });
   }
 
   @override
-  Future<MyResponse> cancelUploadVideo({required String id}) async {
+  Future<MyResponse> cancelUploadVideo({
+    required String id,
+  }) async {
     try {
-      await editedVideoUploader.cancel(taskId: id);
+      await videoUploader.cancel(taskId: id);
+      //await videoUploader.cancelAll();
+      await _subscription?.cancel();
       return const Right(unit);
     } on CancelUploadVideoException {
       return Left(CRUDVideoFailure());
@@ -118,10 +139,11 @@ class VideosRepositoryImpl extends EditedVideosRepository {
   @override
   Future<MyResponse> updateVideo({
     required VideoModel video,
+    required String videoEndPoint,
   }) async {
     return await _getMessage(() {
       return DioHelper.putData(
-        url: "${Endpoints.editedVideos}/${video.id}",
+        url: "$videoEndPoint/${video.id}",
         data: {
           "name": "${video.name}.mp4",
           "user_id": userId,

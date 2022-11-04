@@ -1,4 +1,5 @@
 import 'package:hive_flutter/adapters.dart';
+
 class DataModel {
   @HiveField(0)
   String? id;

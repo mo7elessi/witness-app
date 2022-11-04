@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_video_info/flutter_video_info.dart';
 import 'package:nice_shot/core/util/boxes.dart';
 import 'package:nice_shot/core/error/exceptions.dart';
 import 'package:nice_shot/data/model/video_model.dart';
@@ -134,8 +135,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       emit(StopRecordingState(fromUser: event.fromUser));
       countdownTimer!.cancel();
       videoDuration = const Duration(seconds: 0);
-      Duration beforeShot =
-          Duration(seconds: (beforeTimeShot.inSeconds.toDouble()) ~/ 2);
+      Duration beforeShot = Duration(seconds: (beforeTimeShot.inSeconds.toDouble()) ~/ 2);
       event.video.path = file!.path;
       List<FlagModel> myFlags = event.video.flags!;
       videos.add(event.video);
@@ -185,7 +185,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       video: videoModel.path!,
       imageFormat: video_thumbnail.ImageFormat.JPEG,
     ).then((value) async {
-      await Boxes.videoBox.add(videoModel..videoThumbnail = value!);
+      videoModel.videoThumbnail = value!;
+      await Boxes.videoBox.add(videoModel);
       emit(SaveToHiveSuccess());
     });
   }
@@ -196,7 +197,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     SaveRecordsEvent event,
     Emitter<CameraState> emit,
   ) async {
-  //  emit(SaveRecordsLoading());
+    //  emit(SaveRecordsLoading());
     for (var e in videosToMerge) {
       for (var i = 0; i < e.length - 1; i++) {
         getApplicationStoragePath().then((value) {
@@ -237,10 +238,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
               );
             }
           });
-          // if (videosToMerge.length - 1 == i) {
-          //   videosToMerge.clear();
-          //   emit(SaveRecordsSuccess());
-          // }
         });
       }
     }

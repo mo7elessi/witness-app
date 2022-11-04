@@ -3,13 +3,11 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:nice_shot/core/functions/functions.dart';
 import 'package:nice_shot/core/util/boxes.dart';
 import 'package:nice_shot/core/util/global_variables.dart';
-import 'package:nice_shot/core/strings/messages.dart';
 import 'package:nice_shot/core/util/enums.dart';
 import 'package:nice_shot/data/model/api/data_model.dart';
 import 'package:nice_shot/data/model/api/pagination.dart';
@@ -18,6 +16,7 @@ import 'package:nice_shot/presentation/features/main_layout/bloc/main_layout_blo
 import '../../../../data/model/api/video_model.dart';
 import '../../../../data/model/video_model.dart' as localVideo;
 import '../../../../data/model/flag_model.dart';
+import '../../../../data/network/end_points.dart';
 import '../../raw_videos/bloc/raw_video_bloc.dart';
 
 part 'edited_video_event.dart';
@@ -25,10 +24,11 @@ part 'edited_video_event.dart';
 part 'edited_video_state.dart';
 
 class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
-  final VideosRepositoryImpl videosRepository;
+  final VideoRepositoryImpl videosRepository;
   final RawVideoBloc rawVideoBloc;
   final MainLayoutBloc mainBloc;
   StreamSubscription? _progressSubscription;
+  StreamSubscription? _resultSubscription;
 
   EditedVideoBloc({
     required this.rawVideoBloc,
@@ -47,81 +47,70 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
     UploadVideoEvent event,
     Emitter<EditedVideoState> emit,
   ) async {
-    VideoModel video = event.video;
-    String path = video.file!.path;
-    final tags = event.tags;
     await _progressSubscription?.cancel();
-    await videosRepository.editedVideoUploader.clearUploads();
-    _progressSubscription =
-        videosRepository.editedVideoUploader.progress.listen((progress) {
+    await videosRepository.videoUploader.clearUploads();
+
+    final uploader = videosRepository.videoUploader;
+
+    _progressSubscription = uploader.progress.listen((progress) {
       emit(state.copyWith(
         uploadingState: RequestState.loading,
-        path: path,
+        path: event.video.file!.path,
         taskId: progress.taskId,
         progressValue: progress.progress! >= 0 ? progress.progress : 0,
+        box: event.box,
       ));
     });
 
     final upload = await videosRepository.uploadVideo(
-      video: video,
-      isEditedVideo: event.isEditedVideo,
+      video: event.video,
+      videoEndPoint: event.videoEndPoint,
     );
     upload.fold(
-      (failure) {
+      (failure) async {
         emit(state.copyWith(
           uploadingState: RequestState.error,
-          box: event.box,
           message: mapFailureToMessage(failure: failure),
         ));
+        await _progressSubscription?.cancel();
       },
-      (response) async {
-        emit(state.copyWith(
-          uploadingState: RequestState.loaded,
-          path: path,
-          message: response.statusCode != null
-              ? UPLOAD_SUCCESS_MESSAGE
-              : UPLOAD_ERROR_MESSAGE,
-        ));
-
-        add(UploadEvent(context: event.context));
-        if (response.statusCode == 201) {
-          String id = response.response!
-              .split(":")[11]
-              .split(",")
-              .first
-              .replaceAll('"', "");
-          if (event.isEditedVideo) {
-            add(GetEditedVideosEvent(id: userId));
-          } else if (tags!.isNotEmpty) {
-            rawVideoBloc.add(
-              UploadFlagEvent(
-                tags: tags,
-                rawVideoId: id,
-              ),
-            );
-          }
+      (response) {
+        emit(state.copyWith(uploadingState: RequestState.loaded));
+        add(UploadEvent());
+        if (event.isEditedVideo) {
+          add(GetEditedVideosEvent());
+        } else if (event.tags.isNotEmpty) {
+          rawVideoBloc.add(
+            UploadFlagEvent(
+              tags: event.tags,
+              rawVideoId: id(response: response.response!),
+            ),
+          );
+        } else {
+          rawVideoBloc.add(GetRawVideosEvent());
         }
       },
     );
+  }
+
+  String id({required String response}) {
+    return response.split(":")[15].split(",").first.replaceAll('"', "");
   }
 
   Future<void> _cancelUploadVideo(
     CancelUploadVideoEvent event,
     Emitter<EditedVideoState> emit,
   ) async {
-    _progressSubscription!.cancel();
     emit(state.copyWith(uploadingState: RequestState.loading));
-
-    final data = await videosRepository.cancelUploadVideo(
-      id: event.taskId,
-    );
-    data.fold(
+    final result = await videosRepository.cancelUploadVideo(id: event.taskId);
+    result.fold(
       (failure) => emit(state.copyWith(
         uploadingState: RequestState.error,
         message: mapFailureToMessage(failure: failure),
       )),
-      (r) {
-        emit(state.copyWith(uploadingState: RequestState.none));
+      (canceled) async => {
+        emit(state.copyWith(uploadingState: RequestState.none)),
+        await _progressSubscription?.cancel(),
       },
     );
   }
@@ -131,7 +120,9 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
     Emitter<EditedVideoState> emit,
   ) async {
     emit(state.copyWith(requestState: RequestState.loading));
-    final data = await videosRepository.getEditedVideos(id: event.id);
+    final data = await videosRepository.getVideos(
+      videoEndPoint: Endpoints.editedVideos,
+    );
     data.fold(
       (failure) => emit(state.copyWith(
         requestState: RequestState.error,
@@ -149,7 +140,10 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
     Emitter<EditedVideoState> emit,
   ) async {
     emit(state.copyWith(requestState: RequestState.loading));
-    final data = await videosRepository.updateVideo(video: event.video);
+    final data = await videosRepository.updateVideo(
+      video: event.video,
+      videoEndPoint: Endpoints.editedVideos,
+    );
     data.fold(
       (failure) => emit(state.copyWith(
         requestState: RequestState.error,
@@ -157,7 +151,7 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
       )),
       (data) {
         emit(state.copyWith(requestState: RequestState.loaded));
-        add(GetEditedVideosEvent(id: userId));
+        add(GetEditedVideosEvent());
       },
     );
   }
@@ -167,18 +161,18 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
     Emitter<EditedVideoState> emit,
   ) async {
     emit(state.copyWith(requestState: RequestState.loading));
-    final data = await videosRepository.deleteEditedVideo(id: event.id);
-
+    final data = await videosRepository.deleteVideo(
+      id: event.id,
+      videoEndPoint: Endpoints.editedVideos,
+    );
     data.fold(
-      (failure) => emit(
-        state.copyWith(
-          requestState: RequestState.error,
-          message: mapFailureToMessage(failure: failure),
-        ),
-      ),
+      (failure) => emit(state.copyWith(
+        requestState: RequestState.error,
+        message: mapFailureToMessage(failure: failure),
+      )),
       (r) {
         emit(state.copyWith(requestState: RequestState.loaded));
-        add(GetEditedVideosEvent(id: userId));
+        add(GetEditedVideosEvent());
       },
     );
   }
@@ -188,40 +182,44 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
     Emitter<EditedVideoState> emit,
   ) async {
     Box<localVideo.VideoModel>? box;
+    String? videoEndPoint;
     if (mainBloc.isSync == true) {
-      List<localVideo.VideoModel> rawVideos = Boxes.videoBox.values
-          .toList()
-          .where((element) => element.isUploaded != true)
-          .toList();
-      List<localVideo.VideoModel> editedVideos = Boxes.exportedVideoBox.values
-          .toList()
-          .where((element) => element.isUploaded != true)
-          .toList();
+      final rawVideos = Boxes.videoBox.values.where((element) {
+        return element.isUploaded != true;
+      });
+      final editedVideos = Boxes.exportedVideoBox.values.where(
+        (element) => element.isUploaded != true,
+      );
       if (rawVideos.isNotEmpty) {
         box = Boxes.videoBox;
+        videoEndPoint = Endpoints.rawVideos;
       } else if (editedVideos.isNotEmpty) {
         box = Boxes.exportedVideoBox;
+        videoEndPoint = Endpoints.editedVideos;
       } else {
         box = Boxes.videoBox;
       }
-      List list = box == Boxes.videoBox ? rawVideos : editedVideos;
-      final element = list.toList();
+      Iterable<localVideo.VideoModel> list =
+          box == Boxes.videoBox ? rawVideos : editedVideos;
+
       if (list.isNotEmpty) {
+        final element = list.toList().first;
+
         final video = VideoModel(
           categoryId: "1",
-          name: element.first.title == null
-              ? element.first.path!.split("/").last
-              : element.first.path!.split("_").last,
+          name: element.title == null
+              ? element.path!.split("/").last
+              : element.path!.split("_").last,
           userId: userId,
-          duration: "${element.first.videoDuration}",
-          thumbnail: File(element.first.videoThumbnail!),
-          file: File(element.first.path!),
+          duration: "${element.videoDuration}",
+          thumbnail: File(element.videoThumbnail!),
+          file: File(element.path!),
         );
         add(UploadVideoEvent(
           video: video,
-          tags: element.first.flags,
+          tags: element.flags ?? [],
           isEditedVideo: box == Boxes.videoBox ? false : true,
-          context: event.context,
+          videoEndPoint: videoEndPoint!,
           box: box,
         ));
       }
@@ -229,8 +227,8 @@ class EditedVideoBloc extends Bloc<EditedVideoEvent, EditedVideoState> {
   }
 
   @override
-  Future<void> close() {
-    _progressSubscription!.cancel();
+  Future<void> close() async {
+    await _progressSubscription?.cancel();
     return super.close();
   }
 }

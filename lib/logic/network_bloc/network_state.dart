@@ -1,6 +1,5 @@
 part of 'network_bloc.dart';
 
-
 @immutable
 class NetworkState extends Equatable {
   final String? message;

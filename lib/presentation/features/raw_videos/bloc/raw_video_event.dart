@@ -2,11 +2,7 @@ part of 'raw_video_bloc.dart';
 
 abstract class RawVideoEvent {}
 
-class GetRawVideosEvent extends RawVideoEvent {
-  final String id;
-
-  GetRawVideosEvent({required this.id});
-}
+class GetRawVideosEvent extends RawVideoEvent {}
 
 class UploadRawVideoEvent extends RawVideoEvent {
   final VideoModel video;

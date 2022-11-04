@@ -3,12 +3,8 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:nice_shot/core/error/exceptions.dart';
 import 'package:nice_shot/core/error/failure.dart';
-import 'package:nice_shot/data/model/api/data_model.dart';
-import 'package:nice_shot/data/model/api/video_model.dart';
 import 'package:nice_shot/data/network/end_points.dart';
 import 'package:nice_shot/data/network/remote/dio_helper.dart';
-import 'package:flutter_uploader/flutter_uploader.dart';
-
 import '../../core/network/network_info.dart';
 import '../../core/util/global_variables.dart';
 import '../model/api/pagination.dart';
@@ -44,6 +40,7 @@ class FlagRepositoryImpl extends FlagRepository {
         final response = await DioHelper.getData(
           url: "${Endpoints.rawVideos}/?user_id=$id",
         );
+
         return Right(Pagination.fromJson(response.data));
       } on ServerException {
         return Left(ServerFailure());

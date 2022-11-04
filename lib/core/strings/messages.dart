@@ -9,5 +9,6 @@ const UPDATE_USER_SUCCESS_MESSAGE = "Updated data successfully";
 const RESET_PASSEORD_SUCCESS_MESSAGE = "Password has been reset";
 const LOGIN_ERROR_MESSAGE = "Error in email or password";
 const UPLOAD_ERROR_MESSAGE = "Upload video failure!";
-const DELETE_ERROR_MESSAGE = "delete video failure!";
+const DELETE_ERROR_MESSAGE = "Delete video failure!";
+const NETWORK_ERROR_MESSAGE = "Please, check internet connection!";
 String REGISTER_ERROR_MESSAGE = "";

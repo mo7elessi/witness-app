@@ -34,7 +34,7 @@ class EditedVideoState extends Equatable {
         progressValue,
         uploadingState,
         taskId,
-    box,
+        box,
       ];
 
   EditedVideoState copyWith({
@@ -61,5 +61,3 @@ class EditedVideoState extends Equatable {
     );
   }
 }
-
-

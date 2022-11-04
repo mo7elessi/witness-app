@@ -6,6 +6,7 @@ class TagModel {
   String? updatedAt;
   String? createdAt;
   int? id;
+
   TagModel({
     this.tag,
     this.rawVideoId,
@@ -15,6 +16,7 @@ class TagModel {
     this.createdAt,
     this.id,
   });
+
   TagModel.fromJson(dynamic json) {
     tag = json['tag'];
     rawVideoId = json['raw_video_id'];

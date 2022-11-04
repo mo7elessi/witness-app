@@ -12,6 +12,7 @@ class ErrorMessageWidget extends StatelessWidget {
   final String message;
   final IconData? icon;
   final bool? isAction;
+
   const ErrorMessageWidget({
     Key? key,
     required this.message,
@@ -37,15 +38,9 @@ class ErrorMessageWidget extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              context.read<UserBloc>().add(
-                    GetUserDataEvent(),
-                  );
-              context.read<EditedVideoBloc>().add(
-                    GetEditedVideosEvent(id: userId),
-                  );
-              context.read<RawVideoBloc>().add(
-                    GetRawVideosEvent(id: userId),
-                  );
+              context.read<UserBloc>().add(GetUserDataEvent());
+              context.read<EditedVideoBloc>().add(GetEditedVideosEvent());
+              context.read<RawVideoBloc>().add(GetRawVideosEvent());
             },
           ),
       ],

@@ -7,7 +7,7 @@ class DurationAdapter extends TypeAdapter<Duration> {
   @override
   Duration read(BinaryReader reader) {
     // TODO: implement read
-   return const Duration();
+    return const Duration();
   }
 
   @override

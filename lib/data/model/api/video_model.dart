@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'tag_model.dart';
 
-
 class VideoModel {
   String? name;
   String? url;
@@ -18,6 +17,7 @@ class VideoModel {
   String? duration;
   String? thumbnailUrl;
   List<TagModel>? tags;
+
   VideoModel({
     this.name,
     this.url,

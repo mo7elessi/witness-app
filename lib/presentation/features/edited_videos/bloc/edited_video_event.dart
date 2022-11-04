@@ -2,25 +2,21 @@ part of 'edited_video_bloc.dart';
 
 abstract class EditedVideoEvent {}
 
-class GetEditedVideosEvent extends EditedVideoEvent {
-  final String id;
-
-  GetEditedVideosEvent({required this.id});
-}
+class GetEditedVideosEvent extends EditedVideoEvent {}
 
 class UploadVideoEvent extends EditedVideoEvent {
   final VideoModel video;
   final Box<localVideo.VideoModel> box;
   final bool isEditedVideo;
-  final BuildContext context;
-  List<FlagModel>? tags = [];
+  final String videoEndPoint;
+  final List<FlagModel> tags;
 
   UploadVideoEvent({
     required this.video,
     required this.isEditedVideo,
-    required this.context,
+    required this.videoEndPoint,
     required this.box,
-    this.tags,
+    required this.tags,
   });
 }
 
@@ -38,11 +34,7 @@ class DeleteEditedVideoEvent extends EditedVideoEvent {
 
 //class CheckVideosEvent extends EditedVideoEvent {}
 
-class UploadEvent extends EditedVideoEvent {
-  final BuildContext context;
-
-  UploadEvent({required this.context});
-}
+class UploadEvent extends EditedVideoEvent {}
 
 class CancelUploadVideoEvent extends EditedVideoEvent {
   final String taskId;

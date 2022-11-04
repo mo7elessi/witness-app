@@ -13,7 +13,6 @@ import '../features/flags/pages/uploaded_flags.dart';
 import '../features/raw_videos/bloc/raw_video_bloc.dart';
 import '../features/video_player/video_player_page.dart';
 import 'alert_dialog_widget.dart';
-import 'loading_widget.dart';
 
 class UploadedVideoItem extends StatelessWidget {
   final VideoModel videoModel;

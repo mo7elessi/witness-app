@@ -1,4 +1,3 @@
-
 class UserModel {
   String? name;
   dynamic status;

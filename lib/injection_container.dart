@@ -19,7 +19,7 @@ import 'package:nice_shot/presentation/features/raw_videos/bloc/raw_video_bloc.d
 GetIt sl = GetIt.instance;
 
 Future<void> init() async {
-
+  //blocs
   sl.registerLazySingleton(() => CameraBloc());
   sl.registerLazySingleton(() => EditedVideoBloc(
         rawVideoBloc: sl(),
@@ -27,23 +27,28 @@ Future<void> init() async {
         mainBloc: sl(),
       ));
   sl.registerLazySingleton(() => RawVideoBloc(
-        videosRepository: sl(),
+        videoRepository: sl(),
         flagRepository: sl(),
+        videosRepository: sl(),
       ));
   sl.registerLazySingleton(() => FlagBloc());
 
-  sl.registerLazySingleton(() => NetworkBloc());
+  sl.registerLazySingleton(() => NetworkBloc(videoBloc: sl()));
   sl.registerLazySingleton(() => UiBloc());
-  sl.registerLazySingleton(() => MainLayoutBloc());
+  sl.registerLazySingleton(() => MainLayoutBloc(networkInfo: sl()));
   sl.registerLazySingleton(() => TrimmerBloc());
-  sl.registerLazySingleton(() => AuthBloc(userRepository: sl(), networkBloc: sl()));
-  sl.registerLazySingleton(() => UserBloc(userRepository: sl(), networkBloc: sl()));
+  sl.registerLazySingleton(
+      () => AuthBloc(userRepository: sl(), networkBloc: sl()));
+  sl.registerLazySingleton(
+      () => UserBloc(userRepository: sl(), networkBloc: sl()));
 
   sl.registerLazySingleton<NetworkInfo>(
-    () => NetworkInfoImpl(connectionChecker: sl.call()),
+    () => NetworkInfoImpl(connectionChecker: sl()),
   );
+  //objects
   sl.registerLazySingleton(() => InternetConnectionChecker());
-  sl.registerLazySingleton(() => VideosRepositoryImpl(networkInfo: sl()));
+  //repositories
+  sl.registerLazySingleton(() => VideoRepositoryImpl(networkInfo: sl()));
   sl.registerLazySingleton(() => RawVideosRepositoryImpl(networkInfo: sl()));
   sl.registerLazySingleton(() => FlagRepositoryImpl(networkInfo: sl()));
   sl.registerLazySingleton(() => NetworkInfoImpl(connectionChecker: sl()));

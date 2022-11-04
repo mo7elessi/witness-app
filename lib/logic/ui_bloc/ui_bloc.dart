@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
 
 part 'ui_event.dart';
+
 part 'ui_state.dart';
 
 class UiBloc extends Bloc<UiEvent, UiState> {
@@ -15,7 +16,7 @@ class UiBloc extends Bloc<UiEvent, UiState> {
   bool isPassword = false;
 
   UiBloc() : super(const UiState()) {
-    on<UiEvent>((event, emit) async{
+    on<UiEvent>((event, emit) async {
       if (event is PickUserImageEvent) {
         await pickImage().then((value) {
           emit(state.copyWith(file: value!));
@@ -28,12 +29,13 @@ class UiBloc extends Bloc<UiEvent, UiState> {
         isPassword = !event.isPassword;
         emit(state.copyWith(
           icon:
-          event.isPassword ? Icons.visibility_sharp : Icons.visibility_off,
+              event.isPassword ? Icons.visibility_sharp : Icons.visibility_off,
           isPassword: event.isPassword,
         ));
       }
-      });
+    });
   }
+
   Future<File?> pickImage() async {
     final file = await picker.getImage(
       source: ImageSource.gallery,

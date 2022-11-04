@@ -30,3 +30,13 @@ class GetSyncState extends MainLayoutState {
   // TODO: implement props
   List<Object?> get props => [];
 }
+
+class ChangeSyncErrorState extends MainLayoutState {
+  final String message;
+
+  ChangeSyncErrorState({required this.message});
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [message];
+}

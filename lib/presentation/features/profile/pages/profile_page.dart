@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nice_shot/core/themes/app_theme.dart';
@@ -9,6 +10,7 @@ import 'package:nice_shot/presentation/features/profile/widgets/user_info_widget
 import 'package:nice_shot/presentation/widgets/error_widget.dart';
 import 'package:nice_shot/presentation/widgets/loading_widget.dart';
 import 'package:nice_shot/presentation/widgets/secondary_button_widget.dart';
+import 'package:nice_shot/presentation/widgets/user_image_widget.dart';
 import '../../../../core/routes/routes.dart';
 import '../../../widgets/snack_bar_widget.dart';
 
@@ -56,8 +58,7 @@ class ProfilePage extends StatelessWidget {
                                             RequestState.loaded) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
-                                        snackBarWidget(
-                                            message: state.message!),
+                                        snackBarWidget(message: state.message!),
                                       );
                                     }
                                   },
@@ -65,21 +66,8 @@ class ProfilePage extends StatelessWidget {
                                     return Stack(
                                       alignment: Alignment.bottomRight,
                                       children: [
-                                        Container(
-                                            height: MySizes.imageHeight,
-                                            width: MySizes.imageWidth,
-                                            decoration: BoxDecoration(
-                                                color: Colors.grey.shade200,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        MySizes.imageRadius),
-                                                image: DecorationImage(
-                                                  image: NetworkImage(
-                                                    user?.logoUrl ??
-                                                        "https://t4.ftcdn.net/jpg/03/46/93/61/360_F_346936114_RaxE6OQogebgAWTalE1myseY1Hbb5qPM.jpg",
-                                                  ),
-                                                  fit: BoxFit.cover,
-                                                ))),
+                                        UserImageWidget(
+                                            imageUri: "${user?.logoUrl}"),
                                         InkWell(
                                           child: Container(
                                             padding: const EdgeInsets.all(
@@ -90,8 +78,7 @@ class ProfilePage extends StatelessWidget {
                                                   BorderRadius.circular(
                                                       MySizes.imageRadius),
                                             ),
-                                            child: const Icon(
-                                                Icons.camera_alt,
+                                            child: const Icon(Icons.camera_alt,
                                                 color: Colors.white),
                                           ),
                                           onTap: () =>

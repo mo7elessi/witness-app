@@ -51,12 +51,12 @@ class EditProfilePage extends StatelessWidget {
               const SizedBox(height: MySizes.verticalSpace * 2),
               BlocConsumer<UserBloc, UserState>(
                 listener: (context, state) {
-                  if (state.updateDataState == RequestState.loaded ||
-                      state.updateDataState == RequestState.error) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      snackBarWidget(message: state.message!),
-                    );
-                  }
+                  // if (state.updateDataState == RequestState.loaded ||
+                  //     state.updateDataState == RequestState.error) {
+                  //   ScaffoldMessenger.of(context).showSnackBar(
+                  //     snackBarWidget(message: state.message!),
+                  //   );
+                  // }
                 },
                 builder: (context, state) {
                   if (state.updateDataState == RequestState.loading) {

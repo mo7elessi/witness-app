@@ -43,6 +43,7 @@ dependencies:
   connectivity_plus: ^2.3.9
   share_plus: ^4.5.3
   cached_network_image: ^3.2.1
+  retry: ^3.1.0
 
 dev_dependencies:
   flutter_launcher_icons: "^0.9.2"

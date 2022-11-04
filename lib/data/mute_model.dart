@@ -1,8 +1,8 @@
 import 'package:nice_shot/presentation/features/editor/pages/trimmer_page.dart';
 
 class MuteModel {
-  double muteStart;
-  double muteEnd;
+  int muteStart;
+  int muteEnd;
   MuteModel({required this.muteStart, required this.muteEnd});
   static String notRelatedSection = "";
 
@@ -18,13 +18,16 @@ class MuteModel {
       }
       if (notRelatedSection == "true") {
         muteModelList.add(model);
+
         notRelatedSection = "";
       }
       _filtering(muteModelList);
+      print("arrauy after filter");
+      muteModelList.forEach((element) {
+        print(element.muteStart);
+        print(element.muteEnd);
+      });
     }
-    muteModelList.forEach((element) {
-      print("start:${element.muteStart}???end:${element.muteEnd}");
-    });
   }
 
   static void _processing(MuteModel muteModelToAdd,
@@ -44,6 +47,8 @@ class MuteModel {
         muteModelToAdd.muteEnd > muteModelToCompareTo.muteEnd) {
       muteModelToCompareTo.muteEnd = muteModelToAdd.muteEnd;
       TrimmerPage.model = muteModelToCompareTo;
+      print(TrimmerPage.model!.muteStart);
+      print(TrimmerPage.model!.muteEnd);
     }
     if (muteModelToCompareTo.muteStart > muteModelToAdd.muteStart &&
         muteModelToCompareTo.muteEnd < muteModelToAdd.muteEnd) {
@@ -66,12 +71,12 @@ class MuteModel {
   }
 
   static void _filtering(List<MuteModel> list) {
-    double minimumStart = 0;
-    double maximumEnd = 0;
+    int minimumStart = 0;
+    int maximumEnd = 0;
     MuteModel? toReAdd;
     List<MuteModel> sameStartFilter = [];
     if (list.isNotEmpty) {
-      double minStart = list.elementAt(0).muteStart;
+      int minStart = list.elementAt(0).muteStart;
       for (int x = 1; x < list.length; x++) {
         if (list.elementAt(x).muteStart < minStart) {
           minStart = list.elementAt(x).muteStart;
@@ -85,7 +90,7 @@ class MuteModel {
       }
     }
     if (sameStartFilter.isNotEmpty) {
-      double maxEnd = sameStartFilter.elementAt(0).muteEnd;
+      int maxEnd = sameStartFilter.elementAt(0).muteEnd;
       for (int x = 1; x < sameStartFilter.length; x++) {
         if (sameStartFilter.elementAt(x).muteEnd > maxEnd) {
           maxEnd = sameStartFilter.elementAt(x).muteEnd;
@@ -98,7 +103,7 @@ class MuteModel {
       }
       for (var element in tempList) {
         if (element.muteStart == minimumStart &&
-            element.muteEnd != maximumEnd||(element.muteEnd==maximumEnd&&element.muteStart!=minimumStart)) {
+            element.muteEnd != maximumEnd) {
           list.remove(element);
         }
       }
@@ -117,12 +122,28 @@ class MuteModel {
   }
 
   static String ffmpegMuteCommand({required List<MuteModel> mutedSections, required int startTrim, required int endTrim}) {
+    print(startTrim);
+    print(endTrim);
+    print("object");
     String command="";
     if(mutedSections.isNotEmpty) {
+      //"-af \"volume=enable='between(t,5,10)':volume=0,volume=enable='between(t,15,20)':volume=0\" -q:v 4 -q:a 4 "
        command = "-af \"";
+      // if (StartCurrentValue == 0) {
+      //   startMute = 0;
+      // } else {
+      //   startMute = StartCurrentValue - startValue.toInt();
+      // }
+      // if (EndCurrentValue == 0) {
+      //   endMute = endTemp.toInt() - startValue.toInt();
+      // } else {
+      //   endMute = EndCurrentValue - startValue.toInt();
+      // }
       for (var element in mutedSections) {
-        double startMute=0;
-        double endMute=0;
+        int startMute=0;
+        int endMute=0;
+        print("ele,emt");
+        print(element.muteStart);
         if(startTrim!=element.muteStart){
            startMute=element.muteStart-startTrim;
         }else{
@@ -138,6 +159,8 @@ class MuteModel {
      command= command.substring(0,command.length-1);
       command+="\" -q:v 4 -q:a 4";
     }
+    print("commnd ");
+    print(command);
     return command;
   }
 }

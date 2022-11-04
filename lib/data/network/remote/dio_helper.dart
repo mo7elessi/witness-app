@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import '../../../core/error/exceptions.dart';
 import '../../../core/util/global_variables.dart';
 
@@ -25,8 +23,8 @@ class DioHelper {
         receiveDataWhenStatusError: true,
         validateStatus: (status) => status! <= 500,
         followRedirects: true,
-        receiveTimeout: 30000,
-        connectTimeout: 5000,
+        receiveTimeout: 30 * 1000,
+        connectTimeout: 10 * 1000,
       ),
     );
   }

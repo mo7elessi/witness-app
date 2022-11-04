@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ApplicationBlocObserver extends BlocObserver {
   String tag = "bloc_observe";
+
   @override
   void onEvent(Bloc bloc, Object? event) {
     super.onEvent(bloc, event);
@@ -15,7 +16,6 @@ class ApplicationBlocObserver extends BlocObserver {
   void onChange(BlocBase bloc, Change change) {
     super.onChange(bloc, change);
     if (kDebugMode) {
-
       print("my states: change: $bloc\nchange: $change");
     }
   }

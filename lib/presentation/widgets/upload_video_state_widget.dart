@@ -34,7 +34,7 @@ class UploadVideoStateWidget extends StatelessWidget {
       listener: (context, state) {
         if (state.uploadingState == RequestState.loaded &&
             state.path == data.path!) {
-          box.putAt(index, data..isUploaded = true);
+          state.box!.putAt(index, data..isUploaded = true);
         }
       },
       builder: (context, state) {
@@ -73,12 +73,12 @@ class UploadVideoStateWidget extends StatelessWidget {
         // }),
         !isEditedVideo
             ? Container(
-                margin: const EdgeInsets.only(right: 12.0),
-                child: FlagCountWidget(
-                  count: flagCount!,
-                  isUploaded: isUploaded,
-                ),
-              )
+          margin: const EdgeInsets.only(right: 12.0),
+          child: FlagCountWidget(
+            count: flagCount!,
+            isUploaded: isUploaded,
+          ),
+        )
             : Container(),
         Container(
           padding: const EdgeInsets.all(5.0),
@@ -105,78 +105,3 @@ class UploadVideoStateWidget extends StatelessWidget {
     );
   }
 }
-//   void _showHint({
-//     required BuildContext context,
-//     required Function function,
-//   }) {
-//     showDialog(
-//       context: context,
-//       builder: (context) {
-//         return AlertDialogWidget(
-//           message: "You cannot upload more than one"
-//               "video at the same time, if you have to,"
-//               " un-upload the current video and upload this video."
-//               "",
-//           title: "UPLOAD VIDEO",
-//           function: () => function(),
-//         );
-//       },
-//     );
-//   }
-// }          // List<FlagModel> flags = data.flags ?? [];
-//
-// final editedVideo = video.VideoModel(
-//   categoryId: "1",
-//   name: title,
-//   userId: userId,
-//   duration: "${data.videoDuration}",
-//   thumbnail: File(data.videoThumbnail!),
-//   file: File(data.path!),
-// );
-// if (isUploaded != true) {
-//   if (videoBloc.state.uploadingState == RequestState.loading) {
-//     _showHint(
-//       context: context,
-//       function: () async {
-//         videoBloc.add(CancelUploadVideoEvent(
-//           taskId: videoBloc.state.taskId!,
-//         ));
-//         flags = [];
-//         await videoInfo.getVideoInfo(data.path!).then((value) {
-//           if (value!.filesize! > 100000000) {
-//             ScaffoldMessenger.of(context).showSnackBar(
-//               snackBarWidget(
-//                 message:
-//                     "Videos larger than 100MB cannot be uploaded!",
-//               ),
-//             );
-//           } else {
-//             videoBloc.add(UploadVideoEvent(
-//                 video: editedVideo,
-//                 isEditedVideo: isEditedVideo,
-//                 context: context));
-//           }
-//           flags = [];
-//         }).then((value) => Navigator.pop(context));
-//       },
-//     );
-//   } else {
-//     await videoInfo.getVideoInfo(data.path!).then((value) {
-//       if (value!.filesize! > 100000000) {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           snackBarWidget(
-//             message:
-//                 "Videos larger than 100 MB cannot be uploaded!",
-//           ),
-//         );
-//       } else {
-//         videoBloc.add(UploadVideoEvent(
-//             video: editedVideo,
-//             isEditedVideo: isEditedVideo,
-//             tags: flags,
-//             context: context));
-//         flags = [];
-//       }
-//     });
-//   }
-// }

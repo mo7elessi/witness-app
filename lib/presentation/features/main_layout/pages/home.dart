@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:nice_shot/core/util/boxes.dart';
 import 'package:nice_shot/core/util/global_variables.dart';
 import 'package:nice_shot/core/routes/routes.dart';
 import 'package:nice_shot/core/themes/app_theme.dart';
-import 'package:nice_shot/data/model/api/video_model.dart';
 import 'package:nice_shot/data/model/video_model.dart' as video;
-import 'package:nice_shot/presentation/features/camera/bloc/bloc.dart';
 import 'package:nice_shot/presentation/features/edited_videos/bloc/edited_video_bloc.dart';
 import 'package:nice_shot/presentation/features/main_layout/bloc/main_layout_bloc.dart';
 import 'package:nice_shot/presentation/features/profile/bloc/user_bloc.dart';
@@ -21,7 +17,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/util/enums.dart';
 import '../../../../data/model/api/User_model.dart';
 import '../../../widgets/alert_dialog_widget.dart';
-import '../../camera/bloc/camera_bloc.dart';
+import '../../../widgets/user_image_widget.dart';
 import '../../edited_videos/pages/edited_videos_page.dart';
 import '../../edited_videos/pages/uploaded_videos_page.dart';
 import '../../permissions/permissions.dart';
@@ -63,8 +59,8 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
       MainLayoutBloc bloc = context.read<MainLayoutBloc>();
       EditedVideoBloc videoBloc = context.read<EditedVideoBloc>();
       context.read<UserBloc>().add(GetUserDataEvent());
-      videoBloc.add(GetEditedVideosEvent(id: userId));
-      context.read<RawVideoBloc>().add(GetRawVideosEvent(id: userId));
+      videoBloc.add(GetEditedVideosEvent());
+      context.read<RawVideoBloc>().add(GetRawVideosEvent());
       bloc.add(ChangeScaffoldBodyEvent(0));
       return BlocListener<EditedVideoBloc, EditedVideoState>(
         listener: (context, state) {
@@ -84,10 +80,12 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
               if (bloc.isSync == true &&
                   context.read<EditedVideoBloc>().state.uploadingState !=
                       RequestState.loading) {
-                context.read<EditedVideoBloc>().add(
-                      UploadEvent(context: context),
-                    );
+                context.read<EditedVideoBloc>().add(UploadEvent());
               }
+            } else if (state is ChangeSyncErrorState) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                snackBarWidget(message: state.message),
+              );
             }
           },
           builder: (BuildContext context, state) {
@@ -104,11 +102,11 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                         onTap: () {
                           if (bloc.isSync) {
                             _showHint(function: () {
-                              if (videoBloc.state.uploadingState ==
-                                  RequestState.loading) {
-                                videoBloc.add(CancelUploadVideoEvent(
-                                    taskId: videoBloc.state.taskId!));
-                              }
+                              // if (videoBloc.state.uploadingState ==
+                              //     RequestState.loading) {
+                              //   videoBloc.add(CancelUploadVideoEvent(
+                              //       taskId: videoBloc.state.taskId!));
+                              // }
                               bloc.add(SyncEvent());
                               Navigator.pop(context);
                             });
@@ -148,13 +146,8 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                               Center(
                                 child: Column(
                                   children: [
-                                    CircleAvatar(
-                                      radius: 40.0,
-                                      backgroundColor: Colors.red.shade100,
-                                      backgroundImage: NetworkImage(
-                                        "${user?.logoUrl}",
-                                      ),
-                                    ),
+                                    UserImageWidget(
+                                        imageUri: "${user?.logoUrl}"),
                                     const SizedBox(
                                         height: MySizes.horizontalSpace),
                                     Expanded(
