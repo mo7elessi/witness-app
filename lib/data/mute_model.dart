@@ -1,8 +1,8 @@
 import 'package:nice_shot/presentation/features/editor/pages/trimmer_page.dart';
 
 class MuteModel {
-  int muteStart;
-  int muteEnd;
+  double muteStart;
+  double muteEnd;
   MuteModel({required this.muteStart, required this.muteEnd});
   static String notRelatedSection = "";
 
@@ -66,12 +66,12 @@ class MuteModel {
   }
 
   static void _filtering(List<MuteModel> list) {
-    int minimumStart = 0;
-    int maximumEnd = 0;
+    double minimumStart = 0;
+    double maximumEnd = 0;
     MuteModel? toReAdd;
     List<MuteModel> sameStartFilter = [];
     if (list.isNotEmpty) {
-      int minStart = list.elementAt(0).muteStart;
+      double minStart = list.elementAt(0).muteStart;
       for (int x = 1; x < list.length; x++) {
         if (list.elementAt(x).muteStart < minStart) {
           minStart = list.elementAt(x).muteStart;
@@ -85,7 +85,7 @@ class MuteModel {
       }
     }
     if (sameStartFilter.isNotEmpty) {
-      int maxEnd = sameStartFilter.elementAt(0).muteEnd;
+      double maxEnd = sameStartFilter.elementAt(0).muteEnd;
       for (int x = 1; x < sameStartFilter.length; x++) {
         if (sameStartFilter.elementAt(x).muteEnd > maxEnd) {
           maxEnd = sameStartFilter.elementAt(x).muteEnd;
@@ -121,8 +121,8 @@ class MuteModel {
     if(mutedSections.isNotEmpty) {
       command = "-af \"";
       for (var element in mutedSections) {
-        int startMute=0;
-        int endMute=0;
+        double startMute=0;
+        double endMute=0;
         if(startTrim!=element.muteStart){
           startMute=element.muteStart-startTrim;
         }else{

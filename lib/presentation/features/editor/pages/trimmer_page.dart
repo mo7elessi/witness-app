@@ -242,8 +242,8 @@ class _TrimmerPageState extends State<TrimmerPage>
                         }
                       } else {
                         TrimmerPage.model = MuteModel(
-                            muteStart: muteStart.toInt(),
-                            muteEnd: muteEnd.toInt());
+                            muteStart: muteStart,
+                            muteEnd: muteEnd);
                         MuteModel.verifyMuteModel(
                             model: TrimmerPage.model!,
                             muteModelList: mutedSections);
